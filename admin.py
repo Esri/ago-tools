@@ -6,9 +6,10 @@ import getpass
 
 class admin:
     
-    def __init__(self):
-        self.portalUrl = raw_input('URL (e.g. https://arcgis.com): ' )
-        self.username = raw_input('Username: ')
+    def __init__(self, username, portal=None):
+        if portal == None:
+            self.portalUrl = 'https://arcgis.com'
+        self.username = username
         self.password = getpass.getpass()        
         self.token = self.__getToken__(self.portalUrl, self.username, self.password)
 
