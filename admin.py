@@ -2,42 +2,21 @@
 
 import urllib
 import json
-import getpass
 
-class admin:
-    
-    def __init__(self):
-        self.portalUrl = raw_input('URL (e.g. https://arcgis.com): ' )
-        self.username = raw_input('Username: ')
-        self.password = getpass.getpass()        
-        self.token = self.__getToken__(self.portalUrl, self.username, self.password)
-
-    def __getToken__(self, url, username, password):
-        '''Retrieves a token to be used with future requests.'''
-        parameters = urllib.urlencode({'username' : username,
-                                       'password' : password,
-                                       'client' : 'requestip',
-                                       'f' : 'json'})
-        response = urllib.urlopen(url + '/sharing/rest/generateToken?', parameters).read()
-        token = json.loads(response)['token']
-        return token
-    
-    def __portalId__(self):
-        '''Gets the ID for the organization/portal.'''
-        parameters = urllib.urlencode({'token' : self.token,
-                                       'f' : 'json'})
-        response = urllib.urlopen(self.portalUrl + '/sharing/rest/portals/self?' + parameters).read()
-        portalId = json.loads(response)['id']
-        return portalId
+class Admin:
+    '''A class of tools for administering AGO Orgs or Portals'''
+    def __init__(self, username, portal=None):
+        from . import User
+        self.user = User(username, portal)
     
     def __users__(self, start=0):
         '''Retrieve a single page of users.'''
-        parameters = urllib.urlencode({'token' : self.token,
+        parameters = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json',
                                        'start' : start,
                                        'num' : 100})
-        portalId = self.__portalId__()
-        response = urllib.urlopen(self.portalUrl + '/sharing/rest/portals/' + portalId + '/users?' + parameters).read()
+        portalId = self.user.__portalId__()
+        response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/portals/' + portalId + '/users?' + parameters).read()
         users = json.loads(response)
         return users    
     
