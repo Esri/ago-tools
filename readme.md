@@ -9,9 +9,8 @@ Unzip into a folder such as C:/myscripts, then either:
 * add that directory to your system path in advanced system settings
 * append it at runtime using the sys module in python
     
-    `import sys`
-    
-    `sys.path.append('c:/myscripts')`
+        import sys
+        sys.path.append('c:/myscripts')
 
     
 ## Sample usage
@@ -24,15 +23,14 @@ Unzip into a folder such as C:/myscripts, then either:
     agolAdmin = Admin(<username>)
     users = agolAdmin.getUsers()
 
-    outputDir = 'c:/temp'
-    outputFile = outputDir + '/users.csv'
+    outputFile = 'c:/temp/users.csv'
 
-    with open(outputFile, 'wb') as outputFile:
-        dataWriter = csv.writer(outputFile, delimiter=',',
+    with open(outputFile, 'wb') as output:
+        dataWriter = csv.writer(output, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
         # Write header row.
         dataWriter.writerow(['Full Name', 'Username', 'Role'])
-        #Write user data.
+        # Write user data.
         for user in users:
             dataWriter.writerow([user['fullName'], user['username'], user['role']])
 
