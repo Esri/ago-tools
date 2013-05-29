@@ -1,4 +1,4 @@
-# agolTools
+# ago-tools
 
 A Python package to assist with administering ArcGIS Online Organizations.
 
@@ -26,9 +26,9 @@ Unzip into a folder such as C:/myscripts, then either:
  
 #### Create a spreadsheet of all users in the org
 	import csv
-    from agolTools.admin import Admin
-    agolAdmin = Admin(<username>)
-    users = agolAdmin.getUsers()
+    from ago-tools.admin import Admin
+    agoAdmin = Admin(<username>)
+    users = agoAdmin.getUsers()
 
     outputFile = 'c:/temp/users.csv'
 
@@ -45,14 +45,14 @@ Unzip into a folder such as C:/myscripts, then either:
 #### Utilities Class
             
 #### Update map service urls in webmaps
-    from agolTools.utilities import Utilities
-    myAgolUtilities = Utilities(<username>)
+    from ago-tools.utilities import Utilities
+    agoUtilities = Utilities(<username>)
 
     webmapId = 'e1d78110b0eg447aab46d373c7360046'
     oldUrl = 'http://myserver.com/arcgis/rest/services/old/MapServer'
     newUrl = 'http://myserver.com/arcgis/rest/services/new/MapServer'
 
-    myAgolUtilities.updateWebmapService(webmapId, oldUrl, newUrl)
+    agoUtilities.updateWebmapService(webmapId, oldUrl, newUrl)
         
 ## Requirements
 
@@ -88,7 +88,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-A copy of the license is available in the repository's [license.txt](https://raw.github.com/ecaldwell/agolTools/master/license.txt) file.
+A copy of the license is available in the repository's [license.txt](https://raw.github.com/Esri/ago-tools/master/license.txt) file.
 
-[](Esri Tags: ArcGIS Web Mapping QuickStart)
+[](Esri Tags: ago-tools)
 [](Esri Language: Python)
