@@ -12,7 +12,10 @@ A Python package to assist with administering ArcGIS Online Organizations.
 2. Run and try the samples.
 
 ## Installation
-Unzip into a folder such as C:/myscripts, then either:
+Unzip into a folder such as C:/myscripts and remove dashes from the directory name.
+e.g. `C:/myscripts/ago-tools-master` to `C:/myscripts/agoTools`
+
+Then do one of the following:
 
 * add that directory to your system path in advanced system settings
 * append it at runtime using the sys module in python
@@ -25,9 +28,10 @@ Unzip into a folder such as C:/myscripts, then either:
 #### Admin Class
  
 #### Create a spreadsheet of all users in the org
+    # Requires admin role.
 	import csv
-    from ago-tools.admin import Admin
-    agoAdmin = Admin(<username>)
+    from agoTools.admin import Admin
+    agoAdmin = Admin(<username>) # Replace <username> with your admin username.
     users = agoAdmin.getUsers()
 
     outputFile = 'c:/temp/users.csv'
@@ -45,8 +49,8 @@ Unzip into a folder such as C:/myscripts, then either:
 #### Utilities Class
             
 #### Update map service urls in webmaps
-    from ago-tools.utilities import Utilities
-    agoUtilities = Utilities(<username>)
+    from agoTools.utilities import Utilities
+    agoUtilities = Utilities(<username>) # Replace <username> with your username.
 
     webmapId = 'e1d78110b0eg447aab46d373c7360046'
     oldUrl = 'http://myserver.com/arcgis/rest/services/old/MapServer'
