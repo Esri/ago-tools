@@ -94,5 +94,5 @@ limitations under the License.
 
 A copy of the license is available in the repository's [license.txt](https://raw.github.com/Esri/ago-tools/master/license.txt) file.
 
-[](Esri Tags: ago-tools)
+[](Esri Tags: ArcGIS-Online Python Tools Library)
 [](Esri Language: Python)
