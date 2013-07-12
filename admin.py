@@ -32,7 +32,7 @@ class Admin:
                 allUsers.append(user)       
         return allUsers
 		
-    def addUsersToGroups(self, daysToCheck, groups):
+    def addNewUsersToGroups(self, daysToCheck, groups):
         '''
         REQUIRES ADMIN ACCESS
         Add new organization users to multiple groups and return a list of the status.
