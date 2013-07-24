@@ -64,22 +64,23 @@ class Utilities:
             params = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
             print 'Getting Info for: ' + itemId
-            #Get the item data
-            reqUrl = self.user.portalUrl + '/sharing/content/items/' + itemId + '?' + params
+            # Get the item data
+            reqUrl = self.user.portalUrl + '/sharing/rest/content/items/' + itemId + '?' + params
             itemReq = urllib.urlopen(reqUrl).read()
             itemString = str(itemReq)
             
-            #See if it needs to be updated
+            # Double check that the existing URL matches the provided URL
             if itemString.find(oldUrl) > -1:
-                #Update the item URL.
+                # Figure out which folder the item is in.
+                itemFolder = self.__getItemFolder__(itemId)
+                # Update the item URL
                 updateParams = urllib.urlencode({'url' : newUrl})
-                updateUrl = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '/items/' + itemId + '/update?' + params
+                updateUrl = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '/' + itemFolder + '/items/' + itemId + '/update?' + params
                 updateReq = urllib.urlopen(updateUrl, updateParams).read()
                 modResponse = json.loads(updateReq)
                 if modResponse.has_key('success'):
                     print "Successfully updated the url."
                 else:
-                    print modResponse
                     raise AGOPostError(itemId, modResponse['error']['message'])
             else:
                 print 'Didn\'t find the specified old URL: ' + oldUrl
