@@ -81,6 +81,16 @@ Then do one of the following:
     newUrl = 'http://myserver.com/arcgis/rest/services/new/MapServer'
 
     agoUtilities.updateWebmapService(webmapId, oldUrl, newUrl)
+    
+#### Update the URL for registered map services or web applications
+    from agoTools.utilities import Utilities
+    agoUtilities = Utilities(<username>) # Replace <username> with your username.
+
+    itemId = 'e1d78110b0eg447aab46d373c7360046'
+    oldUrl = 'http://oldserver.com/app'
+    newUrl = 'http://newserver.com/app'
+
+    agoUtilities.updateItemUrl(itemId, oldUrl, newUrl)
         
 ## Requirements
 
