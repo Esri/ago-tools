@@ -29,22 +29,22 @@ Then do one of the following:
 #### Admin Class
  
 #### Create a spreadsheet of all users in the org
-    # Requires admin role.
+	# Requires admin role.
 	import csv
-    from agoTools.admin import Admin
-    agoAdmin = Admin(<username>) # Replace <username> with your admin username.
-    users = agoAdmin.getUsers()
+	from agoTools.admin import Admin
+	
+	agoAdmin = Admin(<username>) # Replace <username> with your admin username.
+	users = agoAdmin.getUsers()
 
-    outputFile = 'c:/temp/users.csv'
+	outputFile = 'c:/temp/users.csv'
 
-    with open(outputFile, 'wb') as output:
-        dataWriter = csv.writer(output, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        # Write header row.
-        dataWriter.writerow(['Full Name', 'Username', 'Role'])
-        # Write user data.
-        for user in users:
-            dataWriter.writerow([user['fullName'], user['username'], user['role']])
+	with open(outputFile, 'wb') as output:
+	    dataWriter = csv.writer(output, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+	    # Write header row.
+	    dataWriter.writerow(['Full Name', 'Username', 'Role'])
+	    # Write user data.
+	    for user in users:
+	        dataWriter.writerow([user['fullName'], user['username'], user['role']])
 
 #### Add new users to existing groups
 	# Requires admin role.
@@ -52,22 +52,20 @@ Then do one of the following:
 	from agoTools.admin import Admin
 	agoAdmin = Admin(<username>) # Replace <username> with your admin username.
     
-    daysToCheck = 2
-    groups = ['d93aabd856f8459a8905a5bd434d4d4a', 'f84c841a3dfc4591b1ff83281ea5025f']
-    userSummary = agoAdmin.addUsersToGroups(daysToCheck, groups)
+	daysToCheck = 2
+	groups = ['d93aabd856f8459a8905a5bd434d4d4a', 'f84c841a3dfc4591b1ff83281ea5025f']
+	userSummary = agoAdmin.addNewUsersToGroups(daysToCheck, groups)
 
-    outputDir = 'c:/temp/'
-    outputDate = datetime.datetime.now().strftime("%Y%m%d") # No modification needed, current date prefixed to filename.
-    outputFile = outputDir + outputDate + '_AddNewUsers2Groups.csv'
-    with open(outputFile, 'wb') as output:
-        dataWriter = csv.writer(output, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
+	outputDir = 'c:/temp/'
+	outputDate = datetime.datetime.now().strftime("%Y%m%d") # No modification needed, current date prefixed to filename.
+	outputFile = outputDir + outputDate + '_AddNewUsers2Groups.csv'
+	with open(outputFile, 'wb') as output:
+        dataWriter = csv.writer(output, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         # Write header row.
         dataWriter.writerow(['Full Name', 'Email', 'Username', 'Role', 'Date Created'])
         # Write user data.
         for user in userSummary:
-            dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'],
-                                 time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
+            dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'], time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
 
             
 #### Utilities Class
