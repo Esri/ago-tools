@@ -39,13 +39,12 @@ Then do one of the following:
 	outputFile = 'c:/temp/users.csv'
 
 	with open(outputFile, 'wb') as output:
-		dataWriter = csv.writer(output, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-		# Write header row.
-		dataWriter.writerow(['Full Name', 'Username', 'Role'])
-		# Write user data.
-		for user in users:
-			dataWriter.writerow([user['fullName'], user['username'], user['role']])
+	    dataWriter = csv.writer(output, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+	    # Write header row.
+	    dataWriter.writerow(['Full Name', 'Username', 'Role'])
+	    # Write user data.
+	    for user in users:
+	        dataWriter.writerow([user['fullName'], user['username'], user['role']])
 
 #### Add new users to existing groups
 	# Requires admin role.
@@ -61,14 +60,13 @@ Then do one of the following:
 	outputDate = datetime.datetime.now().strftime("%Y%m%d") # No modification needed, current date prefixed to filename.
 	outputFile = outputDir + outputDate + '_AddNewUsers2Groups.csv'
 	with open(outputFile, 'wb') as output:
-        	dataWriter = csv.writer(output, delimiter=',',
-                                quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        	# Write header row.
-        	dataWriter.writerow(['Full Name', 'Email', 'Username', 'Role', 'Date Created'])
-        	# Write user data.
-        	for user in userSummary:
-            	dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'],
-                                 time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
+            dataWriter = csv.writer(output, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            # Write header row.
+            dataWriter.writerow(['Full Name', 'Email', 'Username', 'Role', 'Date Created'])
+            # Write user data.
+            for user in userSummary:
+                dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'],
+            	        time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
 
             
 #### Utilities Class
