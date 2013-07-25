@@ -47,10 +47,47 @@ class Utilities:
                     raise AGOPostError(webmapId, modResponse['error']['message'])
                 else:
                     print "Successfully updated the urls"
+            else:
+                print 'Didn\'t find any services for ' + oldUrl
         except ValueError as e:
             print 'Error - no web maps specified'
         except AGOPostError as e:
             print 'Error updating web map ' + e.webmap + ": " + e.msg
+            
+    def updateItemUrl(self, itemId, oldUrl, newUrl):
+        '''
+        Use this to update the URL for items such as Map Images.
+        The oldUrl parameter is required as a check to ensure you are not
+        accidentally changing the wrong item or url.
+        '''
+        try:
+            params = urllib.urlencode({'token' : self.user.token,
+                                       'f' : 'json'})
+            print 'Getting Info for: ' + itemId
+            # Get the item data
+            reqUrl = self.user.portalUrl + '/sharing/rest/content/items/' + itemId + '?' + params
+            itemReq = urllib.urlopen(reqUrl).read()
+            itemString = str(itemReq)
+            
+            # Double check that the existing URL matches the provided URL
+            if itemString.find(oldUrl) > -1:
+                # Figure out which folder the item is in.
+                itemFolder = self.__getItemFolder__(itemId)
+                # Update the item URL
+                updateParams = urllib.urlencode({'url' : newUrl})
+                updateUrl = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '/' + itemFolder + '/items/' + itemId + '/update?' + params
+                updateReq = urllib.urlopen(updateUrl, updateParams).read()
+                modResponse = json.loads(updateReq)
+                if modResponse.has_key('success'):
+                    print "Successfully updated the url."
+                else:
+                    raise AGOPostError(itemId, modResponse['error']['message'])
+            else:
+                print 'Didn\'t find the specified old URL: ' + oldUrl
+        except ValueError as e:
+            print e
+        except AGOPostError as e:
+            print 'Error updating item: ' + e.msg
                 
     def __decode_dict__(self, dct):
         newdict = {}
