@@ -6,6 +6,7 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * Create a spreadsheet of all users in the org
 * Update map service urls in webmaps
 * Search for new users and add them to a list of groups
+* Move (migrate) all items between accounts (single or batch)
 
 ## Instructions
 
