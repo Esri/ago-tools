@@ -2,6 +2,7 @@
 
 import urllib
 import json
+import csv
 
 class Admin:
     '''A class of tools for administering AGO Orgs or Portals'''
@@ -117,3 +118,22 @@ class Admin:
         print '    from USER ' + userFrom + ' to USER ' + userTo
 				
         return		
+
+    def migrateAccounts(self, pathUserMappingCSV):
+        '''
+        REQUIRES ADMIN ACCESS
+        Reassigns ownership of all content items between pairs of accounts specified in a CSV file.
+        (i.e., this function batches migrateAccount using a CSV to feed in the accounts to migrate from/to)
+        CSV should have two columns (no column headers/labels): col1=userFrom, col2=userTo
+		'''
+
+        with open(pathUserMappingCSV, 'rb') as userMappingCSV:
+            userMapping = csv.reader(userMappingCSV)
+            for user in userMapping:
+                userFrom = user[0]
+                userTo = user[1]
+                print 'Copying items from ' + userFrom + ' to ' + userTo + '...'
+                Admin.migrateAccount(self, userFrom, userTo)
+                print
+
+        return

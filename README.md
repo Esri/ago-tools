@@ -70,12 +70,23 @@ Then do one of the following:
         for user in userSummary:
             dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'], time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
 
-#### Migrate all content from one account to another
-    #Requires admin role.
+#### Move all content from one account to another
+    #Requires admin role
+	
     from agoTools.admin import Admin
-    agoAdmin = Admin(<username>)  #Replace <username> with your admin username.
+    agoAdmin = Admin(<username>)  #Replace <username> with your admin username
     
     migrateAccount(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
+	
+#### Move all content between pairs of accounts listed in a CSV
+
+    #Requires admin role
+	#Recommend creating CSV in Excel and saving as "CSV (Comma Delimited)"
+	
+    from agoTools.admin import Admin
+
+    agoAdmin = Admin(<username>)  #Replace <username> with your admin username
+    Admin.migrateAccounts(agoAdmin, r'<userMapping.CSV path>')   # Replace <userMapping.CSV path> with path to your file
 
             
 #### Utilities Class
