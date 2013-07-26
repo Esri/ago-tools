@@ -65,3 +65,55 @@ class Admin:
                 
         return userSummary
 
+    def migrateAccount(self, userFrom, userTo):
+        '''
+        REQUIRES ADMIN ACCESS
+        Transfers ownership of all items in userFrom's account to userTo's account, keeping same folder names.
+        - Does not check for existing folders in userTo's account.
+        - Does not delete content from userFrom's account.
+        '''
+        
+		# request user content for userFrom
+		# response contains list of items in root folder and list of all folders
+        parameters = urllib.urlencode({'token': self.user.token, 'f': 'json'})
+        request = self.user.portalUrl + '/sharing/rest/content/users/' + userFrom + '?' + parameters
+        userContent = json.loads(urllib.urlopen(request).read())
+		
+		# create same folders in userTo's account like those in userFrom's account (requires POST)
+        for folder in userContent['folders']:
+            parameters2 = urllib.urlencode({'title' : folder['title'], 'token': self.user.token, 'f': 'json'})
+            request2 = self.user.portalUrl + '/sharing/rest/content/users/' + userTo + '/createFolder?'           
+            response2 = urllib.urlopen(request2, parameters2).read()
+
+        # keep track of items and folders
+        numberOfItems = 0
+        numberOfFolders = 1
+			
+        # change ownership of items in ROOT folder (requires POST)
+        for item in userContent['items']:
+            parameters3 = urllib.urlencode({'targetUsername' : userTo, 'targetFoldername' : '/', 'token': self.user.token, 'f': 'json'})
+            request3 = self.user.portalUrl + '/sharing/rest/content/users/' + userFrom + '/items/' + item['id'] + '/reassign?'
+            response3 = urllib.urlopen(request3, parameters3).read()
+            if 'success' in response3:
+                numberOfItems += 1
+		
+        ### change ownership of items in SUBFOLDERS (nested loop)
+        # request content in current folder
+        for folder in userContent['folders']:
+            parameters4 = urllib.urlencode({'token': self.user.token, 'f': 'json'})
+            request4 = self.user.portalUrl + '/sharing/rest/content/users/' + userFrom + '/' + folder['id'] + '?' + parameters4
+            folderContent = json.loads(urllib.urlopen(request4).read())
+            numberOfFolders += 1
+
+            # change ownership of items in CURRENT folder to userTo and put in correct folder (requires POST)
+            for item in folderContent['items']:
+                parameters5 = urllib.urlencode({'targetUsername' : userTo, 'targetFoldername' : folder['title'], 'token': self.user.token, 'f': 'pjson'})
+                request5 = self.user.portalUrl + '/sharing/rest/content/users/' + userFrom + '/' + folder['id'] + '/items/' + item['id'] + '/reassign?'
+                response5 = urllib.urlopen(request5, parameters5).read()
+                numberOfItems += 1
+
+        # summarize results
+        print str(numberOfItems) + ' ITEMS in ' + str(numberOfFolders) + ' FOLDERS (incl. Home folder) copied'
+        print '    from USER ' + userFrom + ' to USER ' + userTo
+				
+        return		
