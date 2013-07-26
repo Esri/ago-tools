@@ -72,22 +72,22 @@ Then do one of the following:
             dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'], time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
 
 #### Move all content from one account to another
-    #Requires admin role
+    # Requires admin role
 	
     from agoTools.admin import Admin
-    agoAdmin = Admin(<username>)  #Replace <username> with your admin username
+    agoAdmin = Admin(<username>)  # Replace <username> with your admin username
     
-    migrateAccount(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
+    migrateAccount(agoAdmin, <userFrom>, <userTo>) # Replace with your current and new account usernames
 	
 #### Move all content between pairs of accounts listed in a CSV
 
-    #Requires admin role
-	#Recommend creating CSV in Excel and saving as "CSV (Comma Delimited)"
+    # Requires admin role
+	# Recommend creating CSV in Excel and saving as "CSV (Comma Delimited)"
 	
     from agoTools.admin import Admin
 
-    agoAdmin = Admin(<username>)  #Replace <username> with your admin username
-    Admin.migrateAccounts(agoAdmin, r'<userMapping.CSV path>')   # Replace <userMapping.CSV path> with path to your file
+    agoAdmin = Admin(<username>)  # Replace <username> with your admin username
+    Admin.migrateAccounts(agoAdmin, r'<userMapping.CSV path>') # Replace <userMapping.CSV path> with path to your file
 
             
 #### Utilities Class
@@ -147,7 +147,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-   http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
