@@ -66,12 +66,12 @@ class Admin:
                 
         return userSummary
 
-    def migrateAccount(self, userFrom, userTo):
+    def reassignAllUser1ItemsToUser2(self, userFrom, userTo):
         '''
         REQUIRES ADMIN ACCESS
-        Transfers ownership of all items in userFrom's account to userTo's account, keeping same folder names.
-        - Does not check for existing folders in userTo's account.
-        - Does not delete content from userFrom's account.
+        Transfers ownership of all items in userFrom/User1's account to userTo/User2's account, keeping same folder names.
+		- Does not check for existing folders in userTo's account.
+		- Does not delete content from userFrom's account.
         '''
         
 		# request user content for userFrom
@@ -80,21 +80,21 @@ class Admin:
         request = self.user.portalUrl + '/sharing/rest/content/users/' + userFrom + '?' + parameters
         userContent = json.loads(urllib.urlopen(request).read())
 		
-		# create same folders in userTo's account like those in userFrom's account (requires POST)
+		# create same folders in userTo's account like those in userFrom's account
         for folder in userContent['folders']:
             parameters2 = urllib.urlencode({'title' : folder['title'], 'token': self.user.token, 'f': 'json'})
             request2 = self.user.portalUrl + '/sharing/rest/content/users/' + userTo + '/createFolder?'           
-            response2 = urllib.urlopen(request2, parameters2).read()
+            response2 = urllib.urlopen(request2, parameters2).read()   # requires POST
 
         # keep track of items and folders
         numberOfItems = 0
         numberOfFolders = 1
 			
-        # change ownership of items in ROOT folder (requires POST)
+        # change ownership of items in ROOT folder
         for item in userContent['items']:
             parameters3 = urllib.urlencode({'targetUsername' : userTo, 'targetFoldername' : '/', 'token': self.user.token, 'f': 'json'})
             request3 = self.user.portalUrl + '/sharing/rest/content/users/' + userFrom + '/items/' + item['id'] + '/reassign?'
-            response3 = urllib.urlopen(request3, parameters3).read()
+            response3 = urllib.urlopen(request3, parameters3).read()   # requires POST
             if 'success' in response3:
                 numberOfItems += 1
 		
@@ -106,34 +106,133 @@ class Admin:
             folderContent = json.loads(urllib.urlopen(request4).read())
             numberOfFolders += 1
 
-            # change ownership of items in CURRENT folder to userTo and put in correct folder (requires POST)
+            # change ownership of items in CURRENT folder to userTo and put in correct folder
             for item in folderContent['items']:
                 parameters5 = urllib.urlencode({'targetUsername' : userTo, 'targetFoldername' : folder['title'], 'token': self.user.token, 'f': 'pjson'})
                 request5 = self.user.portalUrl + '/sharing/rest/content/users/' + userFrom + '/' + folder['id'] + '/items/' + item['id'] + '/reassign?'
-                response5 = urllib.urlopen(request5, parameters5).read()
+                response5 = urllib.urlopen(request5, parameters5).read()   # requires POST
                 numberOfItems += 1
 
         # summarize results
-        print str(numberOfItems) + ' ITEMS in ' + str(numberOfFolders) + ' FOLDERS (incl. Home folder) copied'
-        print '    from USER ' + userFrom + ' to USER ' + userTo
+        print '    ' + str(numberOfItems) + ' ITEMS in ' + str(numberOfFolders) + ' FOLDERS (incl. Home folder) copied'
+        print '        from USER ' + userFrom + ' to USER ' + userTo
 				
-        return		
+        return
+
+    def reassignAllGroupOwnership(self, userFrom, userTo):
+        '''
+        REQUIRES ADMIN ACCESS
+        Reassigns ownership of all groups between a pair of accounts.
+		'''
+        groups = 0
+        groupsReassigned = 0
+
+        # Get list of userFrom's groups
+        print 'Requesting ' + userFrom + "'s group info from ArcGIS Online...",
+        parameters = urllib.urlencode({'token': self.user.token, 'f': 'pjson'})
+        request = self.user.portalUrl + '/sharing/rest/community/users/' + userFrom + '?' + parameters
+        response = urllib.urlopen(request).read()
+        userFromContent = json.loads(response)
+        print 'RECEIVED!'
+        
+        # Determine if userFrom is group owner and, if so, transfer ownership to userTo
+        print 'Checking groups...',
+        for group in userFromContent['groups']:
+            print '.',
+            groups += 1
+            if group['owner'] == userFrom:
+                parameters = urllib.urlencode({'targetUsername' : userTo, 'token': self.user.token, 'f': 'pjson'})
+                request = self.user.portalUrl + '/sharing/rest/community/groups/' + group['id'] + '/reassign?'
+                response = urllib.urlopen(request, parameters).read()   # requires POST
+                if 'success' in response:
+                    groupsReassigned += 1
+        
+        # Report results
+        print
+        print '    CHECKED ' + str(groups) + ' groups ASSOCIATED with ' + userFrom + '.'
+        print '       REASSIGNED ' + str(groupsReassigned) + ' groups OWNED by ' + userFrom + ' to ' + userTo + '.'
+        
+        return
+  
+    def addUser2ToAllUser1Groups(self, userFrom, userTo):
+        '''
+        REQUIRES ADMIN ACCESS
+        Adds userTo/User2 to all groups that userFrom/User1 is a member
+        '''
+        
+        groups = 0
+        groupsOwned = 0
+        groupsAdded = 0
+        
+        # Get list of userFrom's groups
+        parameters = urllib.urlencode({'token': self.user.token, 'f': 'pjson'})
+        request = self.user.portalUrl + '/sharing/rest/community/users/' + userFrom + '?' + parameters
+        response = urllib.urlopen(request).read()
+        userFromContent = json.loads(response)
+        
+        # Add userTo to each group that userFrom's is a member, but not an owner
+        for group in userFromContent['groups']:
+            groups += 1
+            if group['owner'] == userFrom:
+                groupsOwned += 1
+            else:
+                parameters = urllib.urlencode({'users' : userTo, 'token': self.user.token, 'f': 'pjson'})
+                request = self.user.portalUrl + '/sharing/rest/community/groups/' + group['id'] + '/addUsers?'
+                response = urllib.urlopen(request, parameters).read()   # requires POST
+                if '[]' in response:   # This currently undocumented operation does not correctly return "success"
+                    groupsAdded += 1
+
+        print '    CHECKED ' + str(groups) + ' groups associated with ' + userFrom + ':'
+        print '        ' + userFrom +  ' OWNS ' + str(groupsOwned) + ' groups (' + userTo + ' NOT added).'
+        print '        ' + userTo + ' is already a MEMBER of ' + str(groups-groupsOwned-groupsAdded) + ' groups.'
+        print '        ' + userTo + ' was ADDED to ' + str(groupsAdded) + ' groups.'
+        
+        return
+
+    def migrateAccount(self, userFrom, userTo):
+        '''
+        REQUIRES ADMIN ACCESS
+        Reassigns ownership of all content items and groups from userFrom to userTo.
+        Also adds userTo to all groups which userFrom is a member.
+        '''
+        
+        print 'Copying all items from ' + userFrom + ' to ' + userTo + '...'
+        Admin.reassignAllUser1ItemsToUser2(self, userFrom, userTo)
+        print
+                
+        print 'Reassigning groups owned by ' + userFrom + ' to ' + userTo + '...'
+        Admin.reassignAllGroupOwnership(self, userFrom, userTo)
+        print
+                
+        print 'Adding ' + userTo + ' as a member of ' + userFrom + "'s groups..."
+        Admin.addUser2ToAllUser1Groups(self, userFrom, userTo)
+        return        
 
     def migrateAccounts(self, pathUserMappingCSV):
         '''
         REQUIRES ADMIN ACCESS
-        Reassigns ownership of all content items between pairs of accounts specified in a CSV file.
-        (i.e., this function batches migrateAccount using a CSV to feed in the accounts to migrate from/to)
-        CSV should have two columns (no column headers/labels): col1=userFrom, col2=userTo
-		'''
+        Reassigns ownership of all content items and groups between pairs of accounts specified in a CSV file.
+        Also adds userTo to all groups which userFrom is a member.
+        This function batches migrateAccount using a CSV to feed in the accounts to migrate from/to,
+        the CSV should have two columns (no column headers/labels): col1=userFrom, col2=userTo)
+        '''
 
         with open(pathUserMappingCSV, 'rb') as userMappingCSV:
             userMapping = csv.reader(userMappingCSV)
             for user in userMapping:
                 userFrom = user[0]
                 userTo = user[1]
-                print 'Copying items from ' + userFrom + ' to ' + userTo + '...'
-                Admin.migrateAccount(self, userFrom, userTo)
+                
+                print '=========='
+                print 'Copying all items from ' + userFrom + ' to ' + userTo + '...'
+                Admin.reassignAllUser1ItemsToUser2(self, userFrom, userTo)
                 print
-
+                
+                print 'Reassigning groups owned by ' + userFrom + ' to ' + userTo + '...'
+                Admin.reassignAllGroupOwnership(self, userFrom, userTo)
+                print
+                
+                print 'Adding ' + userTo + ' as a member of ' + userFrom + "'s groups..."
+                Admin.addUser2ToAllUser1Groups(self, userFrom, userTo)
+                print '=========='
         return

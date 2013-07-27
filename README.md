@@ -27,7 +27,7 @@ Then do one of the following:
 
 ## Samples
 
-#### Admin Class
+### Admin Class
  
 #### Create a spreadsheet of all users in the org
     # Requires admin role.
@@ -71,26 +71,33 @@ Then do one of the following:
         for user in userSummary:
             dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'], time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
 
-#### Move all content from one account to another
-    #Requires admin role
+#### Move all items from one account to another, reassign ownership of all groups, or add user to another user's groups
+    # Requires admin role
+    # If you want to do all three tasks at once, see migrateAccount or migrateAccounts functions
 	
     from agoTools.admin import Admin
     agoAdmin = Admin(<username>)  #Replace <username> with your admin username
     
-    migrateAccount(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
+    reassignAllUser1ItemsToUser2(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
+    reassignAllGroupOwnership(agoAdmin, <userFrom>, <userTo>)
+    addUser2ToAllUser1Groups(agoAdmin, <userFrom>, <userTo>)
+    
+#### Migrate person to a new account within the same Org
+    # Requires admin role
+    # Useful when migrating to Enterprise Logins.
+    # Reassigns all items/groups to new owner and
+    # adds userTo to all groups which userFrom is a member.'''
+
+    from agoTools.admin_working import Admin
 	
-#### Move all content between pairs of accounts listed in a CSV
-
-    #Requires admin role
-	#Recommend creating CSV in Excel and saving as "CSV (Comma Delimited)"
-	
-    from agoTools.admin import Admin
-
-    agoAdmin = Admin(<username>)  #Replace <username> with your admin username
-    Admin.migrateAccounts(agoAdmin, r'<userMapping.CSV path>')   # Replace <userMapping.CSV path> with path to your file
-
-            
-#### Utilities Class
+    myAgol = Admin('<username>')  # Replace <username> your ADMIN account
+    
+    # for migrating a single account...
+    Admin.migrateAccount(myAgol, '<userFrom>', '<userTo>')   # Replace with usernames between which you are moving items
+    # for migrating a batch of accounts
+    Admin.migrateAccounts(myAgol, <path to user mapping CSV>)   # Replace with path to CSV file with col1=userFrom, col2=userTo
+  
+### Utilities Class
             
 #### Update map service urls in webmaps
     from agoTools.utilities import Utilities
@@ -110,16 +117,7 @@ Then do one of the following:
     oldUrl = 'http://oldserver.com/app'
     newUrl = 'http://newserver.com/app'
 
-    agoUtilities.updateItemUrl(itemId, oldUrl, newUrl)
-
-#### Move all items from one user to another (within the same Org)
-#### Useful when migrating to Enterprise Logins
-
-    from agoTools.admin_working import Admin
-	
-    myAgol = Admin('<username>')  # Replace <username> your ADMIN account
-    Admin.migrateAccount(myAgol, '<userFrom>', '<userTo>')   # Replace with usernames between which you are moving items
-	
+    agoUtilities.updateItemUrl(itemId, oldUrl, newUrl)	
 
 ## Requirements
 
