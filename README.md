@@ -78,9 +78,9 @@ Then do one of the following:
     from agoTools.admin import Admin
     agoAdmin = Admin(<username>)  #Replace <username> with your admin username
     
-    reassignAllUser1ItemsToUser2(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
-    reassignAllGroupOwnership(agoAdmin, <userFrom>, <userTo>)
-    addUser2ToAllUser1Groups(agoAdmin, <userFrom>, <userTo>)
+    Admin.reassignAllUser1ItemsToUser2(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
+    Admin.reassignAllGroupOwnership(agoAdmin, <userFrom>, <userTo>)
+    Admin.addUser2ToAllUser1Groups(agoAdmin, <userFrom>, <userTo>)
     
 #### Migrate person to a new account within the same Org
     # Requires admin role
@@ -88,7 +88,7 @@ Then do one of the following:
     # Reassigns all items/groups to new owner and
     # adds userTo to all groups which userFrom is a member.'''
 
-    from agoTools.admin_working import Admin
+    from agoTools.admin import Admin
 	
     myAgol = Admin('<username>')  # Replace <username> your ADMIN account
     
