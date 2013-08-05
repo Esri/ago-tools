@@ -18,7 +18,7 @@ class Utilities:
             reqUrl = self.user.portalUrl + '/sharing/content/items/' + webmapId + '/data?' + params
             itemDataReq = urllib.urlopen(reqUrl).read()
             itemString = str(itemDataReq)
-            
+
             #See if it needs to be updated
             if itemString.find(oldUrl) > -1:
                 #Update the map
@@ -53,7 +53,7 @@ class Utilities:
             print 'Error - no web maps specified'
         except AGOPostError as e:
             print 'Error updating web map ' + e.webmap + ": " + e.msg
-            
+
     def updateItemUrl(self, itemId, oldUrl, newUrl):
         '''
         Use this to update the URL for items such as Map Images.
@@ -68,7 +68,7 @@ class Utilities:
             reqUrl = self.user.portalUrl + '/sharing/rest/content/items/' + itemId + '?' + params
             itemReq = urllib.urlopen(reqUrl).read()
             itemString = str(itemReq)
-            
+
             # Double check that the existing URL matches the provided URL
             if itemString.find(oldUrl) > -1:
                 # Figure out which folder the item is in.
@@ -88,7 +88,7 @@ class Utilities:
             print e
         except AGOPostError as e:
             print 'Error updating item: ' + e.msg
-                
+
     def __decode_dict__(self, dct):
         newdict = {}
         for k, v in dct.iteritems():
@@ -96,7 +96,7 @@ class Utilities:
             v = self.__safeValue__(v)
             newdict[k] = v
         return newdict
-    
+
     def __safeValue__(self, inVal):
         outVal = inVal
         if isinstance(inVal, unicode):
@@ -104,14 +104,14 @@ class Utilities:
         elif isinstance(inVal, list):
             outVal = self.__decode_list__(inVal)
         return outVal
-    
+
     def __decode_list__(self, lst):
         newList = []
         for i in lst:
             i = self.__safeValue__(i)
             newList.append(i)
         return newList
-    
+
     def __getItemFolder__(self, itemId):
         '''Finds the foldername for a particular item.'''
         parameters = urllib.urlencode({'token' : self.user.token,
@@ -126,14 +126,14 @@ class Utilities:
                     for item in folderContent['items']:
                         if item['id'] == itemId:
                             return folder['id']
-        
+
     def __getFolderContent__(self, folderId):
         '''Lists all of the items in a folder.'''
         parameters = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
         response = json.loads(urllib.urlopen(self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '/' + folderId + '?' + parameters).read())
         return response
-        
+
 class AGOPostError(Exception):
     def __init__(self, webmap, msg):
         self.webmap = webmap
