@@ -6,9 +6,9 @@ import csv
 
 class Admin:
     '''A class of tools for administering AGO Orgs or Portals'''
-    def __init__(self, username, portal=None):
+    def __init__(self, username, portal=None, password=None):
         from . import User
-        self.user = User(username, portal)
+        self.user = User(username, portal, password)
 
     def __users__(self, start=0):
         '''Retrieve a single page of users.'''
@@ -19,7 +19,7 @@ class Admin:
         portalId = self.user.__portalId__()
         response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/portals/' + portalId + '/users?' + parameters).read()
         users = json.loads(response)
-        return users    
+        return users
 
     def getUsers(self):
         ''' Returns a list of all users in the organization (requires admin access).'''
@@ -30,7 +30,7 @@ class Admin:
         while users['nextStart'] > 0:
             users = self.__users__(users['nextStart'])
             for user in users['users']:
-                allUsers.append(user)       
+                allUsers.append(user)
         return allUsers
 
     def addNewUsersToGroups(self, daysToCheck, groups):
@@ -83,7 +83,7 @@ class Admin:
         # create same folders in userTo's account like those in userFrom's account
         for folder in userContent['folders']:
             parameters2 = urllib.urlencode({'title' : folder['title'], 'token': self.user.token, 'f': 'json'})
-            request2 = self.user.portalUrl + '/sharing/rest/content/users/' + userTo + '/createFolder?'           
+            request2 = self.user.portalUrl + '/sharing/rest/content/users/' + userTo + '/createFolder?'
             response2 = urllib.urlopen(request2, parameters2).read()   # requires POST
 
         # keep track of items and folders
@@ -206,7 +206,7 @@ class Admin:
 
         print 'Adding ' + userTo + ' as a member of ' + userFrom + "'s groups..."
         self.addUser2ToAllUser1Groups(self, userFrom, userTo)
-        return        
+        return
 
     def migrateAccounts(self, pathUserMappingCSV):
         '''
