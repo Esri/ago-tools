@@ -9,7 +9,7 @@ class Utilities:
         from . import User
         self.user = User(username, portal, password)
 
-    def updateWebmapService(self, webmapId, oldUrl, newUrl):
+    def updateWebmapService(self, webmapId, oldUrl, newUrl, folderID=None):
         try:
             params = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
@@ -39,9 +39,10 @@ class Utilities:
                     'text' : newString
                 }
                 # Figure out which folder the item is in.
-                itemFolder = self.__getItemFolder__(webmapId)
+                if folderID == None:
+                    folderID = self.__getItemFolder__(webmapId)
                 #Post back the changes overwriting the old map
-                modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + itemFolder + '/addItem?' + params , urllib.urlencode(outParamObj))
+                modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
                 #Evaluate the results to make sure it happened
                 modResponse = json.loads(modRequest.read())
                 if modResponse.has_key('error'):
@@ -55,7 +56,7 @@ class Utilities:
         except AGOPostError as e:
             print 'Error updating web map ' + e.webmap + ": " + e.msg
 
-    def updateItemUrl(self, itemId, oldUrl, newUrl):
+    def updateItemUrl(self, itemId, oldUrl, newUrl, folderID=None):
         '''
         Use this to update the URL for items such as Map Services.
         The oldUrl parameter is required as a check to ensure you are not
@@ -82,11 +83,12 @@ class Utilities:
             # Double check that the existing URL matches the provided URL
             if itemString.find(oldUrl) > -1:
                 # Figure out which folder the item is in.
-                itemFolder = self.__getItemFolder__(itemId)
+                if folderID == None:
+                    folderID = self.__getItemFolder__(itemId)
                 # Update the item URL
                 updatedURL = existingURL.replace(oldUrl, newUrl)
                 updateParams = urllib.urlencode({'url' : updatedURL})
-                updateUrl = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '/' + itemFolder + '/items/' + itemId + '/update?' + params
+                updateUrl = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '/' + folderID + '/items/' + itemId + '/update?' + params
                 updateReq = urllib.urlopen(updateUrl, updateParams).read()
                 modResponse = json.loads(updateReq)
                 if modResponse.has_key('success'):
@@ -142,7 +144,7 @@ class Utilities:
                 return folder['id']
                 break
 
-    def updateURLs(self, oldUrl, newUrl, items):
+    def updateURLs(self, oldUrl, newUrl, items, folderID=None):
         '''
 		Updates the URL or URL part for all URLs in a list of AGOL items.
 
@@ -152,10 +154,10 @@ class Utilities:
 		'''
         for item in items:
             if item['type'] == 'Web Map':
-                self.updateWebmapService(item['id'], oldUrl, newUrl)
+                self.updateWebmapService(item['id'], oldUrl, newUrl, folderID)
             else:
                 if item.has_key('url') and not item['url'] == None:
-                    self.updateItemUrl(item['id'], oldUrl, newUrl)
+                    self.updateItemUrl(item['id'], oldUrl, newUrl, folderID)
 
     def __decode_dict__(self, dct):
         newdict = {}
@@ -188,12 +190,11 @@ class Utilities:
         for item in response['items']:
             if item['id'] == itemId:
                 return ''
-            else:
-                for folder in response['folders']:
-                    folderContent = self.__getFolderContent__(folder['id'])
-                    for item in folderContent['items']:
-                        if item['id'] == itemId:
-                            return folder['id']
+        for folder in response['folders']:
+            folderContent = self.__getFolderContent__(folder['id'])
+            for item in folderContent['items']:
+                if item['id'] == itemId:
+                    return folder['id']
 
     def __getFolderContent__(self, folderId):
         '''Lists all of the items in a folder.'''
