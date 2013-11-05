@@ -49,26 +49,30 @@ Then do one of the following:
 
 #### Add new users to existing groups
     # Requires admin role.
-    import csv, datetime
+    import csv, time, datetime
     from agoTools.admin import Admin
 
     # User parameters:
     agoAdmin = Admin(<username>)   # Replace <username> with your admin username.
     daysToCheck = 7   # Replace with number of days to check...1 checks past day, 7 checks past week, etc.
     groups = [<groupID1>, <groupID2>, ...]   # Enter <groupIDs> of groups to which you want to add new users
+    # Find the group ID with this tool: http://developers.arcgis.com/en/javascript/samples/portal_getgroupamd/
     outputDir = 'c:/temp/'   # Replace with path for report file
 	
     outputDate = datetime.datetime.now().strftime("%Y%m%d")   # Current date prefixed to filename.
     outputFile = outputDir + outputDate + '_AddNewUsers2Groups.csv'
 	
-    userSummary = agoAdmin.addNewUsersToGroups(daysToCheck, groups)
+    newUsers = agoAdmin.getNewUsers(daysToCheck)
+    userSummary = agoAdmin.addUsersToGroups(newUsers, groups)
+    # print userSummary # Uncomment this line to see a summary of the group additions.
+    # Reports false-negatives as of Nov 5, 2013.
 	
     with open(outputFile, 'wb') as output:
         dataWriter = csv.writer(output, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         # Write header row.
         dataWriter.writerow(['Full Name', 'Email', 'Username', 'Role', 'Date Created'])
         # Write user data.
-        for user in userSummary:
+        for user in newUsers:
             dataWriter.writerow([user['fullName'], user['email'], user['username'], user['role'], time.strftime("%Y-%m-%d", time.gmtime(user['created']/1000))])
 
 #### Move all items from one account to another, reassign ownership of all groups, or add user to another user's groups
@@ -78,9 +82,9 @@ Then do one of the following:
     from agoTools.admin import Admin
     agoAdmin = Admin(<username>)  # Replace <username> with your admin username
     
-    Admin.reassignAllUser1ItemsToUser2(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
-    Admin.reassignAllGroupOwnership(agoAdmin, <userFrom>, <userTo>)
-    Admin.addUser2ToAllUser1Groups(agoAdmin, <userFrom>, <userTo>)
+    agoAdmin.reassignAllUser1ItemsToUser2(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
+    agoAdmin.reassignAllGroupOwnership(agoAdmin, <userFrom>, <userTo>)
+    agoAdmin.addUser2ToAllUser1Groups(agoAdmin, <userFrom>, <userTo>)
     
 #### Migrate person to a new account within the same Org
     # Requires admin role
@@ -93,9 +97,9 @@ Then do one of the following:
     myAgol = Admin('<username>')  # Replace <username> your ADMIN account
     
     # for migrating a single account...
-    Admin.migrateAccount(myAgol, '<userFrom>', '<userTo>')   # Replace with usernames between which you are moving items
+    myAgol.migrateAccount(myAgol, '<userFrom>', '<userTo>')   # Replace with usernames between which you are moving items
     # for migrating a batch of accounts
-    Admin.migrateAccounts(myAgol, <path to user mapping CSV>)   # Replace with path to CSV file with col1=userFrom, col2=userTo
+    myAgol.migrateAccounts(myAgol, <path to user mapping CSV>)   # Replace with path to CSV file with col1=userFrom, col2=userTo
   
 ### Utilities Classs
             
