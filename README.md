@@ -49,7 +49,7 @@ Then do one of the following:
 
 #### Add new users to existing groups
     # Requires admin role.
-    import csv, time
+    import csv, time, datetime
     from agoTools.admin import Admin
 
     # User parameters:
@@ -82,9 +82,9 @@ Then do one of the following:
     from agoTools.admin import Admin
     agoAdmin = Admin(<username>)  # Replace <username> with your admin username
     
-    Admin.reassignAllUser1ItemsToUser2(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
-    Admin.reassignAllGroupOwnership(agoAdmin, <userFrom>, <userTo>)
-    Admin.addUser2ToAllUser1Groups(agoAdmin, <userFrom>, <userTo>)
+    agoAdmin.reassignAllUser1ItemsToUser2(agoAdmin, <userFrom>, <userTo>)  #Replace with your current and new account usernames
+    agoAdmin.reassignAllGroupOwnership(agoAdmin, <userFrom>, <userTo>)
+    agoAdmin.addUser2ToAllUser1Groups(agoAdmin, <userFrom>, <userTo>)
     
 #### Migrate person to a new account within the same Org
     # Requires admin role
@@ -97,9 +97,9 @@ Then do one of the following:
     myAgol = Admin('<username>')  # Replace <username> your ADMIN account
     
     # for migrating a single account...
-    Admin.migrateAccount(myAgol, '<userFrom>', '<userTo>')   # Replace with usernames between which you are moving items
+    myAgol.migrateAccount(myAgol, '<userFrom>', '<userTo>')   # Replace with usernames between which you are moving items
     # for migrating a batch of accounts
-    Admin.migrateAccounts(myAgol, <path to user mapping CSV>)   # Replace with path to CSV file with col1=userFrom, col2=userTo
+    myAgol.migrateAccounts(myAgol, <path to user mapping CSV>)   # Replace with path to CSV file with col1=userFrom, col2=userTo
   
 ### Utilities Classs
             
