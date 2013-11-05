@@ -33,39 +33,51 @@ class Admin:
             for user in users['users']:
                 allUsers.append(user)
         return allUsers
-
-    def addNewUsersToGroups(self, daysToCheck, groups):
-        '''
-        REQUIRES ADMIN ACCESS
-        Add new organization users to multiple groups and return a list of the status.
-        '''
-        # daysToCheck is the time interval to check for new users.
-        # e.g. 1 will check past day, 7 will check past week, etc.
-        # Provide one or more group IDs as strings (in quotes) separated by commas.
-        # e.g. ['d93aabd856f8459a8905a5bd434d4d4a', 'f84c841a3dfc4591b1ff83281ea5025f']
-
-        userSummary = []
-        users = self.getUsers()
-
-        # Create a list of all new users (joined in the last 'daysToCheck' days).
-        newUsers = []
-        for user in users:
-            if date.fromtimestamp(float(user['created'])/1000) > date.today()-timedelta(days=daysToCheck):
-                newUsers.append(user)
-
-        # Assign new users to the specified group(s).
-        parameters = urllib.urlencode({'token': self.user.token, 'f': 'json'})
-        for groupID in groups:
-            for newUser in newUsers:
-                userSummary.append(newUser)
-                user = newUser['username']
-                print 'Attempting to add ' + user + ' to groupID ' + groupID
-                # Add Users - REQUIRES POST method (undocumented operation as of 2013-07-10).
-                response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/community/groups/' + groupID + '/addUsers?', 'users=' + user + "&" + parameters).read()
-                print response +' NOTE: May return "notAdded" even if successful.  Confirm addition on ArcGIS.com.'
-                print ''
-
-        return userSummary
+    
+    def getNewUsers(self, daysToCheck):
+            '''
+            REQUIRES ADMIN ACCESS
+            Add new organization users to multiple groups and return a list of the status.
+            '''
+            # daysToCheck is the time interval to check for new users.
+            # e.g. 1 will check past day, 7 will check past week, etc.
+            
+            users = self.getUsers()
+            
+            # Create a list of all new users (joined in the last 'daysToCheck' days).
+            newUsers = []
+            for user in users:
+                if date.fromtimestamp(float(user['created'])/1000) > date.today()-timedelta(days=daysToCheck):
+                    newUsers.append(user)
+                    
+            return newUsers
+    
+    def addUsersToGroups(self, users, groups):
+            '''
+            REQUIRES ADMIN ACCESS
+            Add organization users to multiple groups and return a list of the status
+            '''
+            # Provide one or more usernames in a list.
+            # e.g. ['user_1', 'user_2']
+            # Provide one or more group IDs as strings in a list.
+            # e.g. ['d93aabd856f8459a8905a5bd434d4d4a', 'f84c841a3dfc4591b1ff83281ea5025f']
+            
+            toolSummary = []
+            
+            # Assign users to the specified group(s).
+            parameters = urllib.urlencode({'token': self.user.token, 'f': 'json'})
+            for groupID in groups:
+                userSummary = []
+                for user in users:
+                    print 'Attempting to add ' + user + ' to groupID ' + groupID
+                    # Add Users - REQUIRES POST method (undocumented operation as of 2013-07-10).
+                    response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/community/groups/' + groupID + '/addUsers?', 'users=' + user + "&" + parameters).read()
+                    responseKeys = json.loads(response).keys() # Returns a list of the keys from the response JSON.
+                    # Will likely report a false-negative.
+                    userSummary.append({user: responseKeys[0]})
+                toolSummary.append({groupID: userSummary})
+    
+            return toolSummary
 
     def reassignAllUser1ItemsToUser2(self, userFrom, userTo):
         '''
