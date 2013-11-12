@@ -3,6 +3,42 @@
 import urllib
 import json
 
+def searchPortal(portal, query=None, numResults=100, sortField='numviews', sortOrder='desc', token=None):
+    '''
+    Search the portal using the specified query and search parameters.
+    Optionally provide a token to return results visible to that user.
+    More examples on advanced search operators here:
+    https://github.com/esri/ago-tools/blob/master/search-cheat-sheet.md
+    '''
+    allResults = []
+    results = __search__(portal, query, numResults, sortField, sortOrder, 0, token)
+    if not 'error' in results.keys():
+        allResults.extend(results['results'])
+        while results['nextStart'] > 0:
+            results = __search__(portal=portal, query=query, numResults=numResults, sortField=sortField,
+                                sortOrder=sortOrder, token=token, start=results['nextStart'])
+            allResults.extend(results['results'])
+        return allResults
+    else:
+        print results['error']['message']
+        return results
+
+def __search__(portal, query=None, numResults=5, sortField='numviews', sortOrder='desc', start=0, token=None):
+    '''Retrieve a single page of search results.'''
+    params = {
+        'q': query,
+        'num': numResults,
+        'sortField': sortField,
+        'sortOrder': sortOrder,
+        'f': 'json',
+        'start': start
+    }
+    if token:
+        params['token': token] # Adding a token provides an authenticated search.
+    request = portal + '/sharing/rest/search?' + urllib.urlencode(params)
+    results = json.loads(urllib.urlopen(request).read())
+    return results
+
 class Utilities:
     '''A class of tools for working with content in an AGO account'''
     def __init__(self, username, portal=None, password=None):
