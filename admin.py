@@ -22,16 +22,24 @@ class Admin:
         users = json.loads(response)
         return users
 
-    def getUsers(self):
-        ''' Returns a list of all users in the organization (requires admin access).'''
+    def getUsers(self, roles=None):
+        '''
+        Returns a list of all users in the organization (requires admin access).
+        Optionally provide a list of roles to filter the results (e.g. ['org_publisher'])
+        '''
+        if not roles:
+            roles = ['org_admin', 'org_publisher', 'org_user']
+            #roles = ['org_admin', 'org_publisher', 'org_author', 'org_viewer'] # new roles to support Dec 2013 update
         allUsers = []
         users = self.__users__()
         for user in users['users']:
-            allUsers.append(user)
+            if user['role'] in roles:
+                allUsers.append(user)
         while users['nextStart'] > 0:
             users = self.__users__(users['nextStart'])
             for user in users['users']:
-                allUsers.append(user)
+                if user['role'] in roles:
+                    allUsers.append(user)
         return allUsers
 
     def getNewUsers(self, daysToCheck):
