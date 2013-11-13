@@ -13,7 +13,7 @@ outputDir = 'c:/temp/'   # Replace with path for report file
 outputDate = datetime.datetime.now().strftime("%Y%m%d")   # Current date prefixed to filename.
 outputFile = outputDir + outputDate + '_AddNewUsers2Groups.csv'
 
-newUsers = agoAdmin.getNewUsers(daysToCheck)
+newUsers = agoAdmin.getUsers(daysToCheck=daysToCheck)
 userSummary = agoAdmin.addUsersToGroups(newUsers, groups)
 
 # print userSummary # Uncomment this line to see a summary of the group additions.
