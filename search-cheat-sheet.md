@@ -1,11 +1,11 @@
 # Advanced Search Cheat Sheet
 
 ## Contents
-* [Defaults](https://github.com/ecaldwell/multi-portal-search/blob/master/search-cheat-sheet.md#defaults)
-* [Modifiers](https://github.com/ecaldwell/multi-portal-search/blob/master/search-cheat-sheet.md#modifiers)
-* [Operators](https://github.com/ecaldwell/multi-portal-search/blob/master/search-cheat-sheet.md#operators)
-* [Search Fields](https://github.com/ecaldwell/multi-portal-search/blob/master/search-cheat-sheet.md#search-fields)
-* [Examples](https://github.com/ecaldwell/multi-portal-search/blob/master/search-cheat-sheet.md#examples)
+* [Defaults](search-cheat-sheet.md#defaults)
+* [Modifiers](search-cheat-sheet.md#modifiers)
+* [Operators](search-cheat-sheet.md#operators)
+* [Search Fields](search-cheat-sheet.md#search-fields)
+* [Examples](search-cheat-sheet.md#examples)
 
 ## Defaults
 The default search looks across several fields for items and groups.  The best match is always returned.
