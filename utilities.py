@@ -3,18 +3,28 @@
 import urllib
 import json
 
-def searchPortal(portal, query=None, numResults=100, sortField='numviews', sortOrder='desc', token=None):
+def searchPortal(portal, query=None, totalResults=None, sortField='numviews', sortOrder='desc', token=None):
     '''
     Search the portal using the specified query and search parameters.
     Optionally provide a token to return results visible to that user.
     More examples on advanced search operators here:
     https://github.com/esri/ago-tools/blob/master/search-cheat-sheet.md
     '''
+    # Default results are returned by highest number of views in descending order.
     allResults = []
+    if not totalResults or totalResults > 100:
+        numResults = 100
+    else:
+        numResults = totalResults
     results = __search__(portal, query, numResults, sortField, sortOrder, 0, token)
+
     if not 'error' in results.keys():
+        if not totalResults:
+            totalResults = results['total'] # Return all of the results.
         allResults.extend(results['results'])
-        while results['nextStart'] > 0:
+        while results['nextStart'] > 0 and results['nextStart'] < totalResults:
+            # Do some math to ensure it only returns the total results requested.
+            numResults = min(totalResults - results['nextStart'] + 1, 100)
             results = __search__(portal=portal, query=query, numResults=numResults, sortField=sortField,
                                 sortOrder=sortOrder, token=token, start=results['nextStart'])
             allResults.extend(results['results'])
@@ -23,7 +33,7 @@ def searchPortal(portal, query=None, numResults=100, sortField='numviews', sortO
         print results['error']['message']
         return results
 
-def __search__(portal, query=None, numResults=5, sortField='numviews', sortOrder='desc', start=0, token=None):
+def __search__(portal, query=None, numResults=100, sortField='numviews', sortOrder='desc', start=0, token=None):
     '''Retrieve a single page of search results.'''
     params = {
         'q': query,
@@ -34,8 +44,9 @@ def __search__(portal, query=None, numResults=5, sortField='numviews', sortOrder
         'start': start
     }
     if token:
-        params['token': token] # Adding a token provides an authenticated search.
+        params['token'] = token # Adding a token provides an authenticated search.
     request = portal + '/sharing/rest/search?' + urllib.urlencode(params)
+    print request
     results = json.loads(urllib.urlopen(request).read())
     return results
 
