@@ -3,6 +3,52 @@
 import urllib
 import json
 
+def searchPortal(portal, query=None, totalResults=None, sortField='numviews', sortOrder='desc', token=None):
+    '''
+    Search the portal using the specified query and search parameters.
+    Optionally provide a token to return results visible to that user.
+    More examples on advanced search operators here:
+    https://github.com/esri/ago-tools/blob/master/search-cheat-sheet.md
+    '''
+    # Default results are returned by highest number of views in descending order.
+    allResults = []
+    if not totalResults or totalResults > 100:
+        numResults = 100
+    else:
+        numResults = totalResults
+    results = __search__(portal, query, numResults, sortField, sortOrder, 0, token)
+
+    if not 'error' in results.keys():
+        if not totalResults:
+            totalResults = results['total'] # Return all of the results.
+        allResults.extend(results['results'])
+        while results['nextStart'] > 0 and results['nextStart'] < totalResults:
+            # Do some math to ensure it only returns the total results requested.
+            numResults = min(totalResults - results['nextStart'] + 1, 100)
+            results = __search__(portal=portal, query=query, numResults=numResults, sortField=sortField,
+                                sortOrder=sortOrder, token=token, start=results['nextStart'])
+            allResults.extend(results['results'])
+        return allResults
+    else:
+        print results['error']['message']
+        return results
+
+def __search__(portal, query=None, numResults=100, sortField='numviews', sortOrder='desc', start=0, token=None):
+    '''Retrieve a single page of search results.'''
+    params = {
+        'q': query,
+        'num': numResults,
+        'sortField': sortField,
+        'sortOrder': sortOrder,
+        'f': 'json',
+        'start': start
+    }
+    if token:
+        params['token'] = token # Adding a token provides an authenticated search.
+    request = portal + '/sharing/rest/search?' + urllib.urlencode(params)
+    results = json.loads(urllib.urlopen(request).read())
+    return results
+
 class Utilities:
     '''A class of tools for working with content in an AGO account'''
     def __init__(self, username, portal=None, password=None):
@@ -61,7 +107,6 @@ class Utilities:
         Use this to update the URL for items such as Map Services.
         The oldUrl parameter is required as a check to ensure you are not
         accidentally changing the wrong item or url.
-
         This can also replace part of a URL. The text of oldUrl is replaced with the text of newUrl. For example you could change just the host name of your URLs.
         '''
         try:
@@ -104,11 +149,10 @@ class Utilities:
 
     def getFolderItems(self, folderId, userName=None):
         '''
-		Returns all items (list of dictionaries) for an AGOL folder using the folder ID.
-
-		folderID -- The unique id for the folder. Use getFolderID to find the folder ID for a folder name.
-		userName -- The user who owns the folder. If not specified, the user initialized with this object is used.
-		'''
+        Returns all items (list of dictionaries) for an AGOL folder using the folder ID.
+        folderID -- The unique id for the folder. Use getFolderID to find the folder ID for a folder name.
+        userName -- The user who owns the folder. If not specified, the user initialized with this object is used.
+        '''
         if userName == None:
             userName = self.user.username
         params = urllib.urlencode({'token': self.user.token, 'f': 'json'})
@@ -118,10 +162,9 @@ class Utilities:
 
     def getUserFolders(self, userName=None):
         '''
-		Returns all folders (list of dictionaries) for an AGOL user.
-
-		userName -- The user who owns the folder. If not specified, the user initialized with this object is used.
-		'''
+        Returns all folders (list of dictionaries) for an AGOL user.
+        userName -- The user who owns the folder. If not specified, the user initialized with this object is used.
+        '''
         if userName == None:
             userName = self.user.username
         parameters = urllib.urlencode({'token': self.user.token, 'f': 'json'})
@@ -131,11 +174,10 @@ class Utilities:
 
     def getFolderID(self, folderTitle, userName=None):
         '''
-		Returns the folder ID given a case insensitive folder title.
-
-		folderTitle -- The title (name) of a folder.
-		userName -- The user who owns the folder. If not specified, the user initialized with this object is used.
-		'''
+        Returns the folder ID given a case insensitive folder title.
+        folderTitle -- The title (name) of a folder.
+        userName -- The user who owns the folder. If not specified, the user initialized with this object is used.
+        '''
         if userName == None:
             userName = self.user.username
         folders = self.getUserFolders(userName)
@@ -146,12 +188,11 @@ class Utilities:
 
     def updateURLs(self, oldUrl, newUrl, items, folderID=None):
         '''
-		Updates the URL or URL part for all URLs in a list of AGOL items.
-
-		This works for all item types that store a URL. (e.g. web maps, map services, applications, etc.)
-		oldUrl -- All or part of a URL to search for.
-		newUrl -- The text that will be used to replace the current "oldUrl" text.
-		'''
+        Updates the URL or URL part for all URLs in a list of AGOL items.
+        This works for all item types that store a URL. (e.g. web maps, map services, applications, etc.)
+        oldUrl -- All or part of a URL to search for.
+        newUrl -- The text that will be used to replace the current "oldUrl" text.
+        '''
         for item in items:
             if item['type'] == 'Web Map':
                 self.updateWebmapService(item['id'], oldUrl, newUrl, folderID)
