@@ -46,7 +46,6 @@ def __search__(portal, query=None, numResults=100, sortField='numviews', sortOrd
     if token:
         params['token'] = token # Adding a token provides an authenticated search.
     request = portal + '/sharing/rest/search?' + urllib.urlencode(params)
-    print request
     results = json.loads(urllib.urlopen(request).read())
     return results
 
