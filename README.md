@@ -37,10 +37,9 @@ A Python package to assist with administering ArcGIS Online Organizations.
 
 * [Update map service URLs in web maps](samples/updateMapServiceUrlsInWebMaps.py)
 * [Update the URL for registered services or web applications](samples/updateRegisteredUrlForServiceOrApp.py)
-* Search Examples:
+* Search Examples ([Advanced search examples](search-cheat-sheet.md)):
   * [Search for the top 10 most viewed public items in the organization](samples/searchTopViewedItems.py)
   * [Search for all content owned by a specific user (admin view)](samples/searchAllUserItems.py)
-  * [Advanced search examples](search-cheat-sheet.md)
 
 
 ## Requirements
