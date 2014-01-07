@@ -8,7 +8,7 @@ class User:
 
     def __init__(self, username, portal=None, password=None):
         if portal == None:
-            self.portalUrl = 'https://arcgis.com'
+            self.portalUrl = 'https://www.arcgis.com'
         else:
             self.portalUrl = portal
         self.username = username
