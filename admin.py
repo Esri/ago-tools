@@ -61,7 +61,7 @@ class Admin:
                 # Add Users - REQUIRES POST method (undocumented operation as of 2013-11-12).
                 response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/community/groups/' + group + '/addUsers?', 'users=' + ','.join(users) + "&" + parameters).read()
                 # Users not added will be reported back with each group.
-                toolSummary.append({groupID: json.loads(response)})
+                toolSummary.append({group: json.loads(response)})
 
             return toolSummary
 
