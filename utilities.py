@@ -146,7 +146,51 @@ class Utilities:
             print e
         except AGOPostError as e:
             print 'Error updating item: ' + e.msg
+            
+    def updatewebmapversionAGX(self, webmapId, folderID=None):
+	    #update the web map version from 1.9x to 1.7x so that the new web maps can be opened in AGX.
+        try:
+            params = urllib.urlencode({'token' : self.user.token,
+                                       'f' : 'json'})
+            print 'Getting Info for: ' + webmapId
+            #Get the item data
+            reqUrl = self.user.portalUrl + '/sharing/content/items/' + webmapId + '/data?' + params
+            itemDataReq = urllib.urlopen(reqUrl).read()
+            itemString = str(itemDataReq)
 
+            itemString = itemString.replace('1.9','1.7')
+                        
+            itemInfoReq = urllib.urlopen(self.user.portalUrl + '/sharing/content/items/' + webmapId + '?' + params)
+            itemInfo = json.loads(itemInfoReq.read(), object_hook=self.__decode_dict__)
+            print 'Updating ' + itemInfo['title']
+
+            #Set up the addItem parameters
+            outParamObj = {
+                'extent' : ', '.join([str(itemInfo['extent'][0][0]), str(itemInfo['extent'][0][1]), str(itemInfo['extent'][1][0]), str(itemInfo['extent'][1][1])]),
+                'type' : itemInfo['type'],
+                'item' : itemInfo['item'],
+                'title' : itemInfo['title'],
+                'overwrite' : 'true',
+                'tags' : ','.join(itemInfo['tags']),
+                'text' : itemString
+            }
+            # Figure out which folder the item is in.
+            if folderID == None:
+                folderID = self.__getItemFolder__(webmapId)
+            #Post back the changes overwriting the old map
+            modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
+            #Evaluate the results to make sure it happened
+            modResponse = json.loads(modRequest.read())
+            if modResponse.has_key('error'):
+                raise AGOPostError(webmapId, modResponse['error']['message'])
+            else:
+                print "Successfully updated the version"
+       
+        except ValueError as e:
+            print 'Error - no web maps specified'
+        except AGOPostError as e:
+            print 'Error updating web map ' + e.webmap + ": " + e.msg
+            
     def getFolderItems(self, folderId, userName=None):
         '''
         Returns all items (list of dictionaries) for an AGOL folder using the folder ID.
