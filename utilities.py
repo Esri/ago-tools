@@ -146,9 +146,9 @@ class Utilities:
             print e
         except AGOPostError as e:
             print 'Error updating item: ' + e.msg
-            
+
     def updatewebmapversionAGX(self, webmapId, folderID=None):
-	    #update the web map version from 1.9x to 1.7x so that the new web maps can be opened in AGX.
+        '''Update the web map version from 1.9x to 1.7x so that the new web maps can be opened in ArcGIS Explorer Online.'''
         try:
             params = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
@@ -158,8 +158,8 @@ class Utilities:
             itemDataReq = urllib.urlopen(reqUrl).read()
             itemString = str(itemDataReq)
 
-            itemString = itemString.replace('1.9','1.7')
-                        
+            itemString = itemString.replace('1.9', '1.7')
+
             itemInfoReq = urllib.urlopen(self.user.portalUrl + '/sharing/content/items/' + webmapId + '?' + params)
             itemInfo = json.loads(itemInfoReq.read(), object_hook=self.__decode_dict__)
             print 'Updating ' + itemInfo['title']
@@ -177,6 +177,7 @@ class Utilities:
             # Figure out which folder the item is in.
             if folderID == None:
                 folderID = self.__getItemFolder__(webmapId)
+
             #Post back the changes overwriting the old map
             modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
             #Evaluate the results to make sure it happened
@@ -185,12 +186,12 @@ class Utilities:
                 raise AGOPostError(webmapId, modResponse['error']['message'])
             else:
                 print "Successfully updated the version"
-       
+
         except ValueError as e:
             print 'Error - no web maps specified'
         except AGOPostError as e:
             print 'Error updating web map ' + e.webmap + ": " + e.msg
-            
+
     def getFolderItems(self, folderId, userName=None):
         '''
         Returns all items (list of dictionaries) for an AGOL folder using the folder ID.
