@@ -84,9 +84,11 @@ class Utilities:
                     'tags' : ','.join(itemInfo['tags']),
                     'text' : newString
                 }
-                # Figure out which folder the item is in.
-                if folderID == None:
-                    folderID = self.__getItemFolder__(webmapId)
+                # Get the item folder.
+                if itemInfo['ownerFolder']:
+                    folderID = itemInfo['ownerFolder']
+                else:
+                    folderID = ''
                 #Post back the changes overwriting the old map
                 modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
                 #Evaluate the results to make sure it happened
@@ -127,9 +129,11 @@ class Utilities:
 
             # Double check that the existing URL matches the provided URL
             if itemString.find(oldUrl) > -1:
-                # Figure out which folder the item is in.
-                if folderID == None:
-                    folderID = self.__getItemFolder__(itemId)
+                # Get the item folder.
+                if itemInfo['ownerFolder']:
+                    folderID = itemInfo['ownerFolder']
+                else:
+                    folderID = ''
                 # Update the item URL
                 updatedURL = existingURL.replace(oldUrl, newUrl)
                 updateParams = urllib.urlencode({'url' : updatedURL})
@@ -146,6 +150,53 @@ class Utilities:
             print e
         except AGOPostError as e:
             print 'Error updating item: ' + e.msg
+
+    def updatewebmapversionAGX(self, webmapId, folderID=None):
+        '''Update the web map version from 1.9x to 1.7x so that the new web maps can be opened in ArcGIS Explorer Online.'''
+        try:
+            params = urllib.urlencode({'token' : self.user.token,
+                                       'f' : 'json'})
+            print 'Getting Info for: ' + webmapId
+            #Get the item data
+            reqUrl = self.user.portalUrl + '/sharing/content/items/' + webmapId + '/data?' + params
+            itemDataReq = urllib.urlopen(reqUrl).read()
+            itemString = str(itemDataReq)
+
+            itemString = itemString.replace('1.9', '1.7')
+
+            itemInfoReq = urllib.urlopen(self.user.portalUrl + '/sharing/content/items/' + webmapId + '?' + params)
+            itemInfo = json.loads(itemInfoReq.read(), object_hook=self.__decode_dict__)
+            print 'Updating ' + itemInfo['title']
+
+            #Set up the addItem parameters
+            outParamObj = {
+                'extent' : ', '.join([str(itemInfo['extent'][0][0]), str(itemInfo['extent'][0][1]), str(itemInfo['extent'][1][0]), str(itemInfo['extent'][1][1])]),
+                'type' : itemInfo['type'],
+                'item' : itemInfo['item'],
+                'title' : itemInfo['title'],
+                'overwrite' : 'true',
+                'tags' : ','.join(itemInfo['tags']),
+                'text' : itemString
+            }
+            # Get the item folder.
+            if itemInfo['ownerFolder']:
+                folderID = itemInfo['ownerFolder']
+            else:
+                folderID = ''
+
+            #Post back the changes overwriting the old map
+            modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
+            #Evaluate the results to make sure it happened
+            modResponse = json.loads(modRequest.read())
+            if modResponse.has_key('error'):
+                raise AGOPostError(webmapId, modResponse['error']['message'])
+            else:
+                print "Successfully updated the version"
+
+        except ValueError as e:
+            print 'Error - no web maps specified'
+        except AGOPostError as e:
+            print 'Error updating web map ' + e.webmap + ": " + e.msg
 
     def getFolderItems(self, folderId, userName=None):
         '''
@@ -225,6 +276,10 @@ class Utilities:
 
     def __getItemFolder__(self, itemId):
         '''Finds the foldername for a particular item.'''
+        # This method is probably not needed anymore as the item folder
+        # is returned in the description response ('ownerFolder').
+        # Recommend deprecating this function or rewriting it to use the simple
+        # description request and return 'ownerFolder'.
         parameters = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
         response = json.loads(urllib.urlopen(self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '?' + parameters).read())
