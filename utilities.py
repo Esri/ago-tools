@@ -84,9 +84,11 @@ class Utilities:
                     'tags' : ','.join(itemInfo['tags']),
                     'text' : newString
                 }
-                # Figure out which folder the item is in.
-                if folderID == None:
-                    folderID = self.__getItemFolder__(webmapId)
+                # Get the item folder.
+                if itemInfo['ownerFolder']:
+                    folderID = itemInfo['ownerFolder']
+                else:
+                    folderID = ''
                 #Post back the changes overwriting the old map
                 modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
                 #Evaluate the results to make sure it happened
@@ -127,9 +129,11 @@ class Utilities:
 
             # Double check that the existing URL matches the provided URL
             if itemString.find(oldUrl) > -1:
-                # Figure out which folder the item is in.
-                if folderID == None:
-                    folderID = self.__getItemFolder__(itemId)
+                # Get the item folder.
+                if itemInfo['ownerFolder']:
+                    folderID = itemInfo['ownerFolder']
+                else:
+                    folderID = ''
                 # Update the item URL
                 updatedURL = existingURL.replace(oldUrl, newUrl)
                 updateParams = urllib.urlencode({'url' : updatedURL})
@@ -174,9 +178,11 @@ class Utilities:
                 'tags' : ','.join(itemInfo['tags']),
                 'text' : itemString
             }
-            # Figure out which folder the item is in.
-            if folderID == None:
-                folderID = self.__getItemFolder__(webmapId)
+            # Get the item folder.
+            if itemInfo['ownerFolder']:
+                folderID = itemInfo['ownerFolder']
+            else:
+                folderID = ''
 
             #Post back the changes overwriting the old map
             modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
@@ -270,6 +276,10 @@ class Utilities:
 
     def __getItemFolder__(self, itemId):
         '''Finds the foldername for a particular item.'''
+        # This method is probably not needed anymore as the item folder
+        # is returned in the description response ('ownerFolder').
+        # Recommend deprecating this function or rewriting it to use the simple
+        # description request and return 'ownerFolder'.
         parameters = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
         response = json.loads(urllib.urlopen(self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '?' + parameters).read())
