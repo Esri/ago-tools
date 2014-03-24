@@ -374,6 +374,31 @@ class Admin:
       jresult = json.loads(response)        
       return jresult["folders"]
 
+    def clearGroup(self,groupid):
+      '''
+      SB
+      unshare all content from specified group
+      CAUTION
+      http://www.arcgis.com/sharing/rest/content/items/af01df44bf36437fa8daed01407138ab/unshare?groups=bf51aa6e879e4676b683dcbefb0ab0a9
+      '''
+      groupcatalog = self.AGOLGroupCatalog(groupid)
+      
+      sItems=''
+      for f in groupcatalog:
+        requestToDelete = self.user.portalUrl + '/sharing/rest/content/items/' + f.id + "/unshare?groups=" + groupid
+
+        parameters = urllib.urlencode({
+                                'token' : self.user.token,
+                        'f' : 'json'})
+        print "Unsharing " + f.title
+
+        response = urllib.urlopen(requestToDelete,parameters).read()
+       
+        jresult = json.loads(response)     
+
+      print "Complete."
+      return None
+     
     def clearFolder(self,folderid):
       '''
       SB
@@ -399,7 +424,19 @@ class Admin:
       jresult = json.loads(response)     
       print "Complete."
       return None
-      
+     
+    def AGOLGroupCatalog(self,groupid):
+      '''
+      SB
+      return the catalog of items in desiginated group
+      http://esrinortheast.maps.arcgis.com/sharing/rest/search?q=%20group%3A0c140388a7084de2a6f38b07230b197d%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20&num=10&sortField=title&sortOrder=asc&f=json&token=5bKl4uEkkesJmcCQYdi_zM3HOx9Oqa6Xoz4MwKLgd0VVoGloi1Uv_EfBnJSfEQvBrves4YQtkyVb6IdnjryrQHPgPzN2dfHimJ6Nf2gnOFaXvfmKkCMjFRDOTbul3xF1xusm-L7I3oZxQkMxCO7KoNEIJn5bErztSHvpxGTdGuCzFloTKWh9KpcDHnobPpBE
+
+      '''
+      sCatalogURL=self.user.portalUrl + "/sharing/rest/search?q=%20group%3A" + groupid + "%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20&num=100&sortField=title&sortOrder=asc"
+
+      return self.AGOLCatalog(None,None,sCatalogURL)
+
+     
     def AGOLUserCatalog(self,folder,includeSize=False):
       '''
       SB
@@ -451,7 +488,7 @@ class Admin:
 
       #if this is a folder catalog, use items, not results
       sItemsProperty = 'results'
-      if self.catalogURL!=None: sItemsProperty='items'
+      if self.catalogURL!=None and str(self.catalogURL).find("/sharing/rest/content/users/")>0: sItemsProperty='items'
 
       pList = AGOLItems( jresult[sItemsProperty])
 
@@ -546,7 +583,13 @@ class Admin:
         if self.orgID != None:
           sCatalogQuery += " orgid:" + self.orgID
       else:
-        sCatalogQuery = self.catalogURL + "?ts=1"
+        #check to ensure ? vs &
+        if(str(self.catalogURL).find('?')<0):
+          char="?"
+        else:
+          char="&"
+
+        sCatalogQuery = self.catalogURL + char + "ts=1" 
 
       sCatalogQuery += "&f=json&num="+ str(num) + "&start=" + str(start)
       sCatalogQuery += "&token=" + self.user.token
