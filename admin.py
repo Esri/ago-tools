@@ -238,27 +238,9 @@ class Admin:
                 print '=========='
         return
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    """additional administrative helper methods, SB 3/2014:"""
     def updateServiceItemsThumbnail(self, folder=None):
         '''
-        SB
-        Fetches catalog of items in portal.  If there is no thumbnail, assigns the default
+        Fetches catalog of items in portal. If there is no thumbnail, assigns the default.
         '''
         if(folder!=None):
             catalog = self.AGOLUserCatalog(folder,False)
@@ -281,11 +263,10 @@ class Admin:
 
         return None
 
-    def registerItems (self, mapservices,folder=''):
+    def registerItems (self, mapservices, folder=''):
         '''
-        SB
-        given a set of AGOL items, register them to the portal,
-        optionally to a specific folder
+        Given a set of AGOL items, register them to the portal,
+        optionally to a specific folder.
         '''
         self.servicesToRegister=mapservices
 
@@ -329,7 +310,8 @@ class Admin:
                                            'accessInformation': sAccessInfo,
                                            'licenseInfo': sLicenseInfo,
                                            'culture': sCulture,
-                                           'type' : sType, 'token' : self.user.token,
+                                           'type' : sType,
+                                           'token' : self.user.token,
                                            'f' : 'json'})
             #todo- use export map on map service items for thumbnail
 
@@ -352,8 +334,7 @@ class Admin:
 
     def getFolderID(self, folderName):
         '''
-        SB
-        return the ID of the AGOL folder with the given name
+        Return the ID of the folder with the given name.
         '''
         folders = self._getUserFolders()
 
@@ -365,21 +346,18 @@ class Admin:
 
     def _getUserFolders(self):
         '''
-        SB
-        return all folder objects for portal
+        Return all folder objects.
         '''
         requestToAdd = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username +  '?f=json&token=' + self.user.token;
-        response = urllib.urlopen(requestToAdd ).read()
+        response = urllib.urlopen(requestToAdd).read()
 
         jresult = json.loads(response)        
         return jresult["folders"]
 
-    def clearGroup(self,groupid):
+    def clearGroup(self, groupid):
         '''
-        SB
-        unshare all content from specified group
+        Unshare all content from the specified group.
         CAUTION
-        http://www.arcgis.com/sharing/rest/content/items/af01df44bf36437fa8daed01407138ab/unshare?groups=bf51aa6e879e4676b683dcbefb0ab0a9
         '''
         groupcatalog = self.AGOLGroupCatalog(groupid)
 
@@ -399,10 +377,9 @@ class Admin:
         print "Complete."
         return None
 
-    def clearFolder(self,folderid):
+    def clearFolder(self, folderid):
         '''
-        SB
-        remove all content from specified folder
+        Delete all content from the specified folder.
         CAUTION
         '''
         foldercatalog = self.AGOLUserCatalog(folderid)
@@ -425,30 +402,25 @@ class Admin:
         print "Complete."
         return None
 
-    def AGOLGroupCatalog(self,groupid):
+    def AGOLGroupCatalog(self, groupid):
         '''
-        SB
-        return the catalog of items in desiginated group
-        http://esrinortheast.maps.arcgis.com/sharing/rest/search?q=%20group%3A0c140388a7084de2a6f38b07230b197d%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20&num=10&sortField=title&sortOrder=asc&f=json&token=5bKl4uEkkesJmcCQYdi_zM3HOx9Oqa6Xoz4MwKLgd0VVoGloi1Uv_EfBnJSfEQvBrves4YQtkyVb6IdnjryrQHPgPzN2dfHimJ6Nf2gnOFaXvfmKkCMjFRDOTbul3xF1xusm-L7I3oZxQkMxCO7KoNEIJn5bErztSHvpxGTdGuCzFloTKWh9KpcDHnobPpBE
-
+        Return the catalog of items in desiginated group.
         '''
         sCatalogURL=self.user.portalUrl + "/sharing/rest/search?q=%20group%3A" + groupid + "%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20&num=100&sortField=title&sortOrder=asc"
 
         return self.AGOLCatalog(None,None,sCatalogURL)
 
 
-    def AGOLUserCatalog(self,folder,includeSize=False):
+    def AGOLUserCatalog(self, folder, includeSize=False):
         '''
-        SB
-        return the catalog of CURRENT USER's items from portal, optionally from only a folder
+        Return the catalog of CURRENT USER's items from portal, optionally from only a folder.
         '''
         sCatalogURL = self.user.portalUrl + "/sharing/rest/content/users/" + self.user.username + folder
         return self.AGOLCatalog(None,None,sCatalogURL)
 
-    def AGOLCatalog(self,query=None,includeSize=False,sCatalogURL=None):
+    def AGOLCatalog(self, query=None, includeSize=False, sCatalogURL=None):
         '''
-        SB
-        return all items from all users in a portal, optionally matching a 
+        Return all items from all users in a portal, optionally matching a 
         specified query.
         optionally make the additional requests for SIZE.
         sCatalogURL can be specified to use a specific folder
@@ -458,7 +430,7 @@ class Admin:
         searchURL = ""
         viewURL = ""
         orgID = ""
-        self.sFullSearch =""
+        self.sFullSearch = ""
         self.bIncludeSize=includeSize
 
         self.orgID = self._getOrgID()
@@ -527,14 +499,11 @@ class Admin:
 
                     allResults.append(r)
 
-
-
         return allResults
 
     def _getSize(self, r):
         '''
-        SB
-        issue query for item size
+        Issue query for item size.
         '''
         if(self.bIncludeSize != True):
             return 0
@@ -553,12 +522,9 @@ class Admin:
 
         return result
 
-        return 0
-
     def _getOrgID(self):
         '''
-        SB
-        return the organization's ID
+        Return the organization's ID.
         '''
         sURL = self.user.portalUrl + "/sharing/rest/portals/self?f=json&token=" + self.user.token
 
@@ -566,11 +532,9 @@ class Admin:
 
         return str(json.loads(response)['id'])
 
-    def _getCatalogQuery(self,start, num):
+    def _getCatalogQuery(self, start, num):
         '''
-        SB 
-        format a content query from specified start and number of records 
-        values
+        Format a content query from specified start and number of records.
         '''
         sQuery=None
         if self.query != None:
