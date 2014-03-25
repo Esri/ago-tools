@@ -560,7 +560,7 @@ class Admin:
         SB
         return the organization's ID
         '''
-        sURL = self.user.portalUrl + "/sharing/rest/portals/self?f=json"
+        sURL = self.user.portalUrl + "/sharing/rest/portals/self?f=json&token=" + self.user.token
 
         response = urllib.urlopen(sURL).read()
 
