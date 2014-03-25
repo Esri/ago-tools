@@ -36,16 +36,16 @@ args = parser.parse_args()
 inputFile = ''
 
 if args.file == None:
-  args.file = _raw_input("CSV path: ")
+    args.file = _raw_input("CSV path: ")
 
 if args.user == None:
-  args.user = _raw_input("Username:")
+    args.user = _raw_input("Username:")
 
 if args.portal == None:
-  args.portal = _raw_input("Portal: ")
- 
+    args.portal = _raw_input("Portal: ")
+
 if args.folder == None:
-  args.folder = _raw_input("Folder (optional): ")
+    args.folder = _raw_input("Folder (optional): ")
 
 args.portal = str(args.portal).replace("http://","https://")
 
@@ -53,16 +53,15 @@ agoAdmin = Admin(args.user,args.portal,args.password)
 
 folderid=None
 if args.folder!= None:
-  fid = agoAdmin.getFolderID(args.folder)
-  args.folder=fid
-  folderid = '/' + args.folder
+    fid = agoAdmin.getFolderID(args.folder)
+    args.folder=fid
+    folderid = '/' + args.folder
 
 if args.file != None:
-  inputFile=args.file
+    inputFile=args.file
 
 with open(inputFile) as input:
-  dataReader = csv.DictReader(input)
-  mapServices=MapServices(dataReader)
-     
-agoAdmin.registerItems(mapServices,folderid)
+    dataReader = csv.DictReader(input)
+    mapServices=MapServices(dataReader)
 
+agoAdmin.registerItems(mapServices,folderid)
