@@ -3,6 +3,8 @@
 import urllib
 import json
 import csv
+import time
+
 from datetime import date, timedelta
 
 class Admin:
@@ -235,3 +237,388 @@ class Admin:
                 self.addUser2ToAllUser1Groups(self, userFrom, userTo)
                 print '=========='
         return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    """additional administrative helper methods, SB 3/2014:"""
+    def updateServiceItemsThumbnail(self, folder=None):
+      '''
+      SB
+      Fetches catalog of items in portal.  If there is no thumbnail, assigns the default
+      '''
+      if(folder!=None):
+        catalog = self.AGOLUserCatalog(folder,False)
+      else:
+        catalog=self.AGOLCatalog(None)
+
+      for r in catalog:
+        if(r.thumbnail==None):
+          parameters = urllib.urlencode({'thumbnailURL' : 'http://static.arcgis.com/images/desktopapp.png', 'token' : self.user.token, 'f' : 'json'})
+
+          requestToUpdate = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username  + '/items/' +r.id + '/update'
+                   
+          try:
+            print ("updating " + r.title + " with thumbnail.")
+            response = urllib.urlopen(requestToUpdate, parameters ).read()
+          
+            jresult = json.loads(response)
+          except:
+            e=1
+        
+      return None
+
+    def registerItems (self, mapservices,folder=''):
+      '''
+      SB
+      given a set of AGOL items, register them to the portal,
+      optionally to a specific folder
+      '''
+      self.servicesToRegister=mapservices
+  
+      if folder==None:
+        folder=''
+
+      icount=0
+      i=0
+      for ms in self.servicesToRegister.service_list:
+        i = i +1
+          
+        sURL=ms.url
+        sTitle=ms.title
+        if ms.thumbnail==None:
+          sThumbnail ='http://static.arcgis.com/images/desktopapp.png' 
+        elif ms.id !=None:
+          sThumbnail ="http://www.arcgis.com/sharing/content/items/" + ms.id + "/info/" + ms.thumbnail
+        else:
+          sThumbnail='http://static.arcgis.com/images/desktopapp.png' 
+
+        #todo, handle map service exports
+
+        sTags = 'mapping' if ms.tags==None else ms.tags
+        sType= 'Map Service' if ms.type==None else ms.type
+        sDescription = '' if ms.description==None else ms.description
+        sSnippet = '' if ms.snippet ==None else ms.snippet
+        sExtent = '' if ms.extent==None else ms.extent
+        sSpatialReference='' if ms.spatialReference==None else ms.spatialReference
+        sAccessInfo='' if ms.accessInformation==None else ms.accessInformation
+        sLicenseInfo='' if ms.licenseInfo==None else ms.licenseInfo
+        sCulture='' if ms.culture == None else ms.culture
+
+        parameters = urllib.urlencode({'URL' : sURL,
+                                      'title' : sTitle,
+                                      'thumbnailURL' : sThumbnail,
+                                      'tags' : sTags, 
+                                      'description' : sDescription,
+                                      'snippet': sSnippet,
+                                      'extent':sExtent,
+                                      'spatialReference':sSpatialReference,
+                                      'accessInformation': sAccessInfo,
+                                      'licenseInfo': sLicenseInfo,
+                                      'culture': sCulture,
+                                      'type' : sType, 'token' : self.user.token,
+                              'f' : 'json'})
+        #todo- use export map on map service items for thumbnail
+      
+        requestToAdd = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + folder + '/addItem'
+                   
+        try:
+          if(sType.find('Service')>=0 or sType.find('Web Mapping Application')>=0):
+            response = urllib.urlopen(requestToAdd, parameters ).read()
+          
+            jresult = json.loads(response)
+            print str(i) + ") " + ms.title + ": success= " + str(jresult["success"]) + "," + ms.url + ", " + "(" + jresult["id"] + ")"
+         
+            if jresult["success"]:
+              icount=icount+1
+
+        except:
+            print str(i) + ") "  + ms.title + ':error!'
+
+      print str(icount) + " item(s) added."
+
+    def getFolderID(self, folderName):
+      '''
+      SB
+      return the ID of the AGOL folder with the given name
+      '''
+      folders = self._getUserFolders()
+      
+      for f in folders:
+        if str(f['title']) == folderName:
+          return str(f['id'])
+
+      return ''
+
+    def _getUserFolders(self):
+      '''
+      SB
+      return all folder objects for portal
+      '''
+      requestToAdd = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username +  '?f=json&token=' + self.user.token;
+      response = urllib.urlopen(requestToAdd ).read()
+          
+      jresult = json.loads(response)        
+      return jresult["folders"]
+
+    def clearGroup(self,groupid):
+      '''
+      SB
+      unshare all content from specified group
+      CAUTION
+      http://www.arcgis.com/sharing/rest/content/items/af01df44bf36437fa8daed01407138ab/unshare?groups=bf51aa6e879e4676b683dcbefb0ab0a9
+      '''
+      groupcatalog = self.AGOLGroupCatalog(groupid)
+      
+      sItems=''
+      for f in groupcatalog:
+        requestToDelete = self.user.portalUrl + '/sharing/rest/content/items/' + f.id + "/unshare?groups=" + groupid
+
+        parameters = urllib.urlencode({
+                                'token' : self.user.token,
+                        'f' : 'json'})
+        print "Unsharing " + f.title
+
+        response = urllib.urlopen(requestToDelete,parameters).read()
+       
+        jresult = json.loads(response)     
+
+      print "Complete."
+      return None
+     
+    def clearFolder(self,folderid):
+      '''
+      SB
+      remove all content from specified folder
+      CAUTION
+      '''
+      foldercatalog = self.AGOLUserCatalog(folderid)
+      sItems=''
+      for f in foldercatalog:
+        sItems+= f.id + ","
+
+      if len(sItems)>0: sItems=sItems[:-1]
+
+      requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + "/deleteItems" 
+
+      parameters = urllib.urlencode({'items':sItems,
+                              'token' : self.user.token,
+                      'f' : 'json'})
+
+      print "Deleting " + str(len(foldercatalog)) + " items..."
+      response = urllib.urlopen(requestToDelete,parameters).read()
+       
+      jresult = json.loads(response)     
+      print "Complete."
+      return None
+     
+    def AGOLGroupCatalog(self,groupid):
+      '''
+      SB
+      return the catalog of items in desiginated group
+      http://esrinortheast.maps.arcgis.com/sharing/rest/search?q=%20group%3A0c140388a7084de2a6f38b07230b197d%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20&num=10&sortField=title&sortOrder=asc&f=json&token=5bKl4uEkkesJmcCQYdi_zM3HOx9Oqa6Xoz4MwKLgd0VVoGloi1Uv_EfBnJSfEQvBrves4YQtkyVb6IdnjryrQHPgPzN2dfHimJ6Nf2gnOFaXvfmKkCMjFRDOTbul3xF1xusm-L7I3oZxQkMxCO7KoNEIJn5bErztSHvpxGTdGuCzFloTKWh9KpcDHnobPpBE
+
+      '''
+      sCatalogURL=self.user.portalUrl + "/sharing/rest/search?q=%20group%3A" + groupid + "%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20&num=100&sortField=title&sortOrder=asc"
+
+      return self.AGOLCatalog(None,None,sCatalogURL)
+
+     
+    def AGOLUserCatalog(self,folder,includeSize=False):
+      '''
+      SB
+      return the catalog of CURRENT USER's items from portal, optionally from only a folder
+      '''
+      sCatalogURL = self.user.portalUrl + "/sharing/rest/content/users/" + self.user.username + folder
+      return self.AGOLCatalog(None,None,sCatalogURL)
+
+    def AGOLCatalog(self,query=None,includeSize=False,sCatalogURL=None):
+      '''
+      SB
+      return all items from all users in a portal, optionally matching a 
+      specified query.
+      optionally make the additional requests for SIZE.
+      sCatalogURL can be specified to use a specific folder
+      '''
+      
+      resultCount = 0
+      searchURL = ""
+      viewURL = ""
+      orgID = ""
+      self.sFullSearch =""
+      self.bIncludeSize=includeSize
+
+      self.orgID = self._getOrgID()
+
+      self.catalogURL=sCatalogURL #for cataloging folders
+
+      if self.user.portalUrl != None:
+        self.searchURL = self.user.portalUrl  + "/sharing/rest" 
+        self.viewURL = self.user.portalUrl  + "/home/item.html?id="
+        
+      self.query = query
+
+      pList=[]
+      allResults = []
+
+      sQuery=self._getCatalogQuery(1,100)#get first batch
+
+      print("fetching records 1-100...")
+
+      response = urllib.urlopen(sQuery).read()
+      jresult=json.loads(response)
+
+      nextRecord = jresult['nextStart']
+      totalRecords = jresult['total']
+      num = jresult['num']
+      start =jresult['start']
+
+      #if this is a folder catalog, use items, not results
+      sItemsProperty = 'results'
+      if self.catalogURL!=None and str(self.catalogURL).find("/sharing/rest/content/users/")>0: sItemsProperty='items'
+
+      pList = AGOLItems( jresult[sItemsProperty])
+
+      for r in pList.AGOLItems_list:
+        r.itemURL = self.viewURL + r.id
+        r.created = time.strftime("%Y-%m-%d",time.gmtime(r.created/1000))
+        r.modified = time.strftime("%Y-%m-%d",time.gmtime(r.modified/1000))
+        if r.size== -1:
+          r.size=0
+        r.size = self._getSize(r)
+        r.myRowID = len(allResults) + 1;
+        allResults.append(r)
+
+      if (nextRecord>0):
+        while(nextRecord>0):
+          sQuery = self._getCatalogQuery(nextRecord, 100)
+          print("fetching records " + str(nextRecord) + "-" + str(nextRecord+100) + "...")
+
+          response = urllib.urlopen(sQuery).read()
+          jresult=json.loads(response)
+
+          nextRecord = jresult['nextStart']
+          totalRecords = jresult['total']
+          num = jresult['num']
+          start =jresult['start']
+
+          pList = AGOLItems( jresult['results'])
+          for r in pList.AGOLItems_list:
+            r.itemURL = self.viewURL + r.id
+            r.created = time.strftime("%Y-%m-%d",time.gmtime(r.created/1000))
+            r.modified = time.strftime("%Y-%m-%d",time.gmtime(r.modified/1000))
+            if r.size== -1:
+              r.size=0
+              r.size = self._getSize(r)
+            r.myRowID = len(allResults) + 1;
+
+            allResults.append(r)
+
+
+
+      return allResults
+
+    def _getSize(self, r):
+      '''
+      SB
+      issue query for item size
+      '''
+      if(self.bIncludeSize != True):
+        return 0
+
+      print ("fetching size for " + r.title + " (" + r.type + ")")
+
+      result=0
+      sURL = self.searchURL + "/content/items/" + str(r.id) + "?f=json&token=" + self.user.token;
+
+      response = urllib.urlopen(sURL).read()
+      result = json.loads(response)['size']
+      if(result>0):
+        result = result/1024
+      else:
+        result=0
+
+      return result
+
+      return 0
+
+    def _getOrgID(self):
+      '''
+      SB
+      return the organization's ID
+      '''
+      sURL = self.user.portalUrl + "/sharing/rest/portals/self?f=json"
+
+      response = urllib.urlopen(sURL).read()
+
+      return str(json.loads(response)['id'])
+
+    def _getCatalogQuery(self,start, num):
+      '''
+      SB 
+      format a content query from specified start and number of records 
+      values
+      '''
+      sQuery=None
+      if self.query != None:
+        sQuery = self.query
+      else:
+        sQuery = self.sFullSearch
+
+      if(self.catalogURL==None):
+        sCatalogQuery = self.searchURL + "/search?q=" + sQuery
+        if self.orgID != None:
+          sCatalogQuery += " orgid:" + self.orgID
+      else:
+        #check to ensure ? vs &
+        if(str(self.catalogURL).find('?')<0):
+          char="?"
+        else:
+          char="&"
+
+        sCatalogQuery = self.catalogURL + char + "ts=1" 
+
+      sCatalogQuery += "&f=json&num="+ str(num) + "&start=" + str(start)
+      sCatalogQuery += "&token=" + self.user.token
+
+      return sCatalogQuery
+
+
+#collection of AGOLItem
+class AGOLItems:
+    def __init__ (self, item_list):
+      self.AGOLItems_list=[]
+      for item in item_list:
+        self.AGOLItems_list.append(AGOLItem(item))
+
+#AGOL item
+class AGOLItem:
+    def __init__(self, item_attributes):
+      for k, v in item_attributes.items():
+        setattr(self, k, v)
+
+#collection of Map Services
+class MapServices:
+    def __init__ (self, import_list):
+      self.service_list=[]
+      for service in import_list:
+        self.service_list.append(MapService(service))
+
+#Map Service
+class MapService:
+    def __init__(self, service_attributes):
+      for k, v in service_attributes.items():
+        setattr(self, k, v)
