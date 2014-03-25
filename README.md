@@ -61,6 +61,14 @@ Find a bug or want to request a new feature?  Please let us know by submitting a
 
 Esri welcomes contributions from anyone and everyone. Please see our [guidelines for contributing](https://github.com/esri/contributing).
 
+Please use the following style guides when contributing to this particular repo:
+
+* 4 spaces for indentation
+* `'singleQuotes'` instead of `"doubleQuotes"`
+* `publicFunction()` vs ` `__internalFunction__()`
+* `# Place comments on their own line preceding the code they explain.`
+
+
 ## Licensing
 Copyright 2013 Esri
 
