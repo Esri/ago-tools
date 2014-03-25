@@ -31,19 +31,18 @@ parser.add_argument('-group', '--group')
 args = parser.parse_args()
 
 if args.user == None:
-  args.user = _raw_input("Username:")
+    args.user = _raw_input("Username:")
 
 if args.portal == None:
-  args.portal = _raw_input("Portal: ")
- 
+    args.portal = _raw_input("Portal: ")
+
 if args.group == None:
-  args.group = _raw_input("Group ID: ")
+    args.group = _raw_input("Group ID: ")
 
 args.portal = str(args.portal).replace("http://","https://")
 
 agoAdmin = Admin(args.user,args.portal,args.password)
 
 agoAdmin.clearGroup(args.group)
-
 
 

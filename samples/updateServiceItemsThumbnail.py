@@ -33,21 +33,21 @@ parser.add_argument('-folder', '--folder')
 args = parser.parse_args()
 
 if args.user == None:
-  args.user = _raw_input("Username:")
+    args.user = _raw_input("Username:")
 
 if args.portal == None:
-  args.portal = _raw_input("Portal: ")
- 
+    args.portal = _raw_input("Portal: ")
+
 if args.folder == None:
-  args.folder = _raw_input("Folder (optional): ")
+    args.folder = _raw_input("Folder (optional): ")
 
 args.portal = str(args.portal).replace("http://","https://")
 
 agoAdmin = Admin(args.user,args.portal,args.password)
 
 if args.folder!= None:
-  fid = agoAdmin.getFolderID(args.folder)
-  args.folder=fid
-  folderid = '/' + args.folder
+    fid = agoAdmin.getFolderID(args.folder)
+    args.folder=fid
+    folderid = '/' + args.folder
 
 agoAdmin.updateServiceItemsThumbnail(folderid)
