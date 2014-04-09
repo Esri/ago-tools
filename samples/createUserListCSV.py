@@ -2,7 +2,7 @@
 import csv, time
 from agoTools.admin import Admin
 
-agoAdmin = Admin(<username>) # Replace <username> with your admin username.
+agoAdmin = Admin('<username>') # Replace <username> with your admin username.
 users = agoAdmin.getUsers()
 
 outputFile = 'c:/temp/users.csv'
