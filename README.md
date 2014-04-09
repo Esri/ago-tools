@@ -18,7 +18,7 @@ A Python package to assist with administering ArcGIS Online Organizations.
 ## Installation
 
 1. Unzip into a folder such as C:/myscripts
-2. Remove dashes from the directory name (e.g. C:/myscripts/ago-tools-master to C:/myscripts/agoTools)
+2. Change the directory name from C:/myscripts/ago-tools-master to C:/myscripts/agoTools (name must not have dashes).
 3. Then do one of the following: A) add that directory to your system path -OR- B) append the directory at runtime using the sys module in python:
       
         import sys
