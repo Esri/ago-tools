@@ -32,7 +32,12 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * Migrate items and group ownership/membership between user accounts:
   * [Move all items from one account to another, reassign ownership of all groups, and/or add user to another user's groups](samples/moveItemsReassignGroups.py)
   * [Migrate account(s)](samples/migrateAccount.py)
-  
+* [Generate a CSV listing the items in the organization](samples/AGOLCat.py)
+* [Register items listed in an input CSV to the organization](samples/registerItems.py)
+* [Remove (delete) all items from a designated folder under My Content](samples/clearFolder.py)
+* [Remove (unshare) all items from a designated group in the organization](samples/clearGroup.py)
+* [Update any missing thumbnails for items under My Content with a default](samples/updateServiceItemsThumbnail.py)
+
 ### Utilities Class
 
 * [Update map service URLs in web maps](samples/updateMapServiceUrlsInWebMaps.py)

@@ -1,3 +1,7 @@
+#### Remove (delete) all items from a designated folder under My Content
+#### Example:
+#### clearFolder.py -u myuser -p mypassword -folder DemoMaps -portal https://esri.maps.arcgis.com 
+
 import argparse
 import sys
 

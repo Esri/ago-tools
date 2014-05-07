@@ -1,3 +1,13 @@
+#### Register items listed in an input CSV to the organization
+#### Optionally place the items into a specific folder under My Content
+#### The required fields in the CSV are:
+#### title,url 
+#### The following fields will be honored if present, otherwise default values will be used:
+#### thumbnail,tags,type,description,snipppet,extent,spatialReference,accessInformation,licenseInfo,culture
+#### Note that 'tags' if not specified will be Mapping and 'type' if not specified will be 'Map Service' 
+#### Example:
+#### registerItems.py -u myuser -p mypassword -folder MyNewItems -portal https://esri.maps.arcgis.com -file c:\temp\agolinput.csv
+
 import csv
 import argparse
 import sys

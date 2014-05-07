@@ -1,3 +1,11 @@
+#### Generate a CSV listing the items in the organization
+#### Optionally include a query using ArcGIS Portal API syntax (http://resources.arcgis.com/en/help/arcgis-rest-api/02r3/02r3000000mn000000.htm)
+#### Optionally return the size of the item (requires additional API request for each item, default is False)
+#### The results will include every item accessible by the credentials provided
+#### Example:
+#### AGOLCat.py -u myuser -p mypassword -size False -portal https://esri.maps.arcgis.com -file c:\temp\agol.csv
+
+
 import csv
 import argparse
 import sys
