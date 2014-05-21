@@ -1,3 +1,8 @@
+#### Remove (unshare) all items from a designated group in the organization
+#### Group IDs can be discovered using this utility: http://developers.arcgis.com/javascript/samples/portal_getgroupamd/
+#### Example:
+#### clearGroup.py -u myuser -p mypassword -group a23455GROUPID334323434 -portal https://esri.maps.arcgis.com 
+
 import argparse
 import sys
 

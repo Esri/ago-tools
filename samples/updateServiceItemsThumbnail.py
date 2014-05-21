@@ -1,3 +1,8 @@
+#### Update any missing thumbnails for items under My Content with a default
+#### Optionally specify a particular folder to search from
+#### Example:
+#### updateServiceItemsThumbnail.py -u myuser -p mypassword -portal https://esri.maps.arcgis.com 
+
 import csv
 import argparse
 import sys
