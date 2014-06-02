@@ -37,6 +37,7 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * [Remove (delete) all items from a designated folder under My Content](samples/clearFolder.py)
 * [Remove (unshare) all items from a designated group in the organization](samples/clearGroup.py)
 * [Update any missing thumbnails for items under My Content with a default](samples/updateServiceItemsThumbnail.py)
+* [Assign roles to Username and Role from input CSV](samples/updateUserRoles.py)
 
 ### Utilities Class
 
