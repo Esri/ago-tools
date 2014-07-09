@@ -37,8 +37,7 @@ def getResultValueWithQuotes(s):
         return ''
     try:
         sResult = str(s)
-        if (sResult.find("\"")>0):
-            sResult = sResult.replace("\"","\"\"")
+        
         return "\"" + str(sResult) + "\""
 
     except:
@@ -80,7 +79,7 @@ if args.portal == None:
 args.portal = str(args.portal).replace("http://","https://")
 
 bIncludeSize=False
-if(args.bIncludeSize.upper() == "TRUE"):
+if(args.bIncludeSize == "True"):
     bIncludeSize=True
 
 agoAdmin = Admin(args.user,args.portal,args.password)
@@ -89,7 +88,7 @@ catalog= agoAdmin.AGOLCatalog(args.query,bIncludeSize)
 
 with open(args.file, 'wb') as output:
     # Write header row.
-    output.write("id,owner,created,modified,name,title,type,typeKeywords,description,tags,snippet,thumbnail,extent,spatialReference,accessInformation,licenseInfo,culture,url,access,size_kb,listed,numComments,numRatings,avgRatings,numViews,itemURL\n")
+    output.write("id,owner,created,modified,name,title,type,typeKeywords,description,tags,snippet,thumbnail,extent,spatialReference,accessInformation,licenseInfo,culture,url,access,size,listed,numComments,numRatings,avgRatings,numViews,itemURL\n")
     # Write item data.
     for r in catalog:
         s=''
