@@ -80,7 +80,7 @@ if args.portal == None:
 args.portal = str(args.portal).replace("http://","https://")
 
 bIncludeSize=False
-if(args.bIncludeSize.upper() == "TRUE"):
+if (args.bIncludeSize != None) and (args.bIncludeSize.upper() == "TRUE"):
     bIncludeSize=True
 
 agoAdmin = Admin(args.user,args.portal,args.password)
