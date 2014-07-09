@@ -37,7 +37,8 @@ def getResultValueWithQuotes(s):
         return ''
     try:
         sResult = str(s)
-        
+        if (sResult.find("\"")>0):
+            sResult = sResult.replace("\"","\"\"")
         return "\"" + str(sResult) + "\""
 
     except:
