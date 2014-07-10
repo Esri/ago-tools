@@ -560,7 +560,27 @@ class Admin:
 
         return sCatalogQuery
 
+    def updateUserRoles(self, users):
+        self.usersToUpdate=users
 
+        requestToUpdate= self.user.portalUrl + '/sharing/rest/portals/self/updateuserrole'
+
+        for u in self.usersToUpdate.user_list:
+            parameters = urllib.urlencode({'user':u.Username,
+                                           'role':u.Role,
+                                           'token' : self.user.token,
+                                           'f' : 'json'})
+
+            print "Updating Role for " + u.Username + " to " + u.Role + "..."
+            response = urllib.urlopen(requestToUpdate,parameters).read()
+            jresult = json.loads(response)     
+            success= str(jresult["success"])
+            print "Success: " + success
+
+        print "Complete."
+        return None
+
+    
 #collection of AGOLItem
 class AGOLItems:
     def __init__ (self, item_list):
@@ -586,3 +606,17 @@ class MapService:
     def __init__(self, service_attributes):
         for k, v in service_attributes.items():
             setattr(self, k, v)
+
+#Collection of Usernames and roles
+class UsersAttributes:
+    def __init__ (self, import_list):
+        self.user_list=[]
+        for user in import_list:
+            self.user_list.append(UserAttributes(user))
+
+class UserAttributes:
+    def __init__(self, user_attributes):
+        for k, v in user_attributes.items():
+            setattr(self, k, v)
+
+

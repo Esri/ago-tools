@@ -31,6 +31,20 @@ def _raw_input(prompt=None, stream=None, input=None):
         line = line[:-1]
     return line
 
+# return value with quotes around it always
+def getResultValueWithQuotes(s):
+    if (s==None):
+        return ''
+    try:
+        sResult = str(s)
+        if (sResult.find("\"")>0):
+            sResult = sResult.replace("\"","\"\"")
+        return "\"" + str(sResult) + "\""
+
+    except:
+        return ''
+
+# return value with quotes if needed
 def getResultValue(s):
     if (s==None):
         return ''
@@ -66,7 +80,8 @@ if args.portal == None:
 args.portal = str(args.portal).replace("http://","https://")
 
 bIncludeSize=False
-if(args.bIncludeSize == "True"):
+
+if (args.bIncludeSize != None) and (args.bIncludeSize.upper() == "TRUE"):
     bIncludeSize=True
 
 agoAdmin = Admin(args.user,args.portal,args.password)
@@ -75,7 +90,7 @@ catalog= agoAdmin.AGOLCatalog(args.query,bIncludeSize)
 
 with open(args.file, 'wb') as output:
     # Write header row.
-    output.write("id,owner,created,modified,name, itle,type,typeKeywords,description,tags,snippet,thumbnail,extent,spatialReference,accessInformation,licenseInfo,culture,url,access,size,listed,numComments,numRatings,avgRatings,numViews,itemURL\n")
+    output.write("id,owner,created,modified,name,title,type,typeKeywords,description,tags,snippet,thumbnail,extent,spatialReference,accessInformation,licenseInfo,culture,url,access,size,listed,numComments,numRatings,avgRatings,numViews,itemURL\n")
     # Write item data.
     for r in catalog:
         s=''
@@ -83,8 +98,8 @@ with open(args.file, 'wb') as output:
         s += getResultValue(r.owner) + ","
         s += getResultValue(r.created) + ","
         s += getResultValue(r.modified) + ","
-        s += getResultValue(r.name) + ","
-        s += getResultValue(r.title) + ","
+        s += getResultValueWithQuotes(r.name) + ","
+        s += getResultValueWithQuotes(r.title) + ","
         s += getResultValue(r.type) + ","
 
         sKeyWords = ""
@@ -95,7 +110,7 @@ with open(args.file, 'wb') as output:
             sKeyWords = sKeyWords[:-1]
 
         s += getResultValue(sKeyWords) + ","
-        s += getResultValue(r.description) + ","
+        s += getResultValueWithQuotes(r.description) + ","
 
         sTags = ""
         for sKW in r.tags:
@@ -105,7 +120,7 @@ with open(args.file, 'wb') as output:
             sTags = sTags[:-1]
 
         s += getResultValue(sTags) + ","
-        s += getResultValue(r.snippet) + ","
+        s += getResultValueWithQuotes(r.snippet) + ","
         s += getResultValue(r.thumbnail) + ","
         s += "" + ","
 
