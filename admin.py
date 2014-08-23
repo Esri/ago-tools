@@ -23,25 +23,68 @@ class Admin:
         response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/portals/' + portalId + '/users?' + parameters).read()
         users = json.loads(response)
         return users
-
+    def __roles__(self,start=0):
+        parameters = urllib.urlencode({'token' : self.user.token,
+                                       'f' : 'json',
+                                       'start' : start,
+                                       'num' : 100})
+        portalId = self.user.__portalId__()
+        response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/portals/' + portalId + '/roles?' + parameters).read()
+        roles = json.loads(response)
+        return roles
+    def getRoles(self):
+        '''
+        Returns a list of roles defined in the organization.
+        This is helpful for custom roles because the User's role property simply returns the ID of the role.
+        THIS DOES NOT INCLUDE THE STANDARD ARCGIS ONLINE ROLES OF ['org_admin', 'org_publisher', 'org_author', 'org_viewer']
+        '''
+        allRoles = []
+        roles = self.__roles__()
+        for role in roles['roles']:
+            allRoles.append(role)
+        while roles['nextStart'] > 0:
+            roles=self.__roles__(roles['nextStart'])
+            for role in roles['roles']:
+                allRoles.append(role)
+        return allRoles
     def getUsers(self, roles=None, daysToCheck=10000):
         '''
         Returns a list of all users in the organization (requires admin access).
         Optionally provide a list of roles to filter the results (e.g. ['org_publisher']).
         Optionally provide a number to include only accounts created in the last x number of days.
         '''
-        if not roles:
-            roles = ['org_admin', 'org_publisher', 'org_user']
+        #if not roles:
+         #   roles = ['org_admin', 'org_publisher', 'org_user']
             #roles = ['org_admin', 'org_publisher', 'org_author', 'org_viewer'] # new roles to support Dec 2013 update
+        #the role property of a user is either one of the standard roles or a custom role ID. Loop through and build a list of ids from the queried roles.
+        if roles:
+            standardRoles = ['org_admin', 'org_publisher', 'org_author', 'org_viewer']
+            queryRoleIDs=[]
+            #if it's a standard role, go ahead and add it.
+            for roleName in roles:
+                if roleName in standardRoles:
+                    queryRoleIDs.append(roleName)
+            #if it's not a standard role, we'll have to look it to return the ID.
+            allRoles = self.getRoles()
+            for role in allRoles:
+                for roleName in roles:
+                    if roleName == role["name"]:
+                        queryRoleIDs.append(role["id"])
         allUsers = []
         users = self.__users__()
         for user in users['users']:
-            if user['role'] in roles and date.fromtimestamp(float(user['created'])/1000) > date.today()-timedelta(days=daysToCheck):
+            if roles:
+                if not user['role'] in queryRoleIDs:
+                    continue
+            if date.fromtimestamp(float(user['created'])/1000) > date.today()-timedelta(days=daysToCheck):
                 allUsers.append(user)
         while users['nextStart'] > 0:
             users = self.__users__(users['nextStart'])
             for user in users['users']:
-                if user['role'] in roles and date.fromtimestamp(float(user['created'])/1000) > date.today()-timedelta(days=daysToCheck):
+                if roles:
+                    if not user['role'] in queryRoleIDs:
+                        continue
+                if date.fromtimestamp(float(user['created'])/1000) > date.today()-timedelta(days=daysToCheck):
                     allUsers.append(user)
         return allUsers
 
@@ -281,11 +324,11 @@ class Admin:
             sURL=ms.url
             sTitle=ms.title
             if ms.thumbnail==None:
-                sThumbnail ='http://static.arcgis.com/images/desktopapp.png' 
+                sThumbnail ='http://static.arcgis.com/images/desktopapp.png'
             elif ms.id !=None:
                 sThumbnail ="http://www.arcgis.com/sharing/content/items/" + ms.id + "/info/" + ms.thumbnail
             else:
-                sThumbnail='http://static.arcgis.com/images/desktopapp.png' 
+                sThumbnail='http://static.arcgis.com/images/desktopapp.png'
 
             #todo, handle map service exports
 
@@ -302,7 +345,7 @@ class Admin:
             parameters = urllib.urlencode({'URL' : sURL,
                                            'title' : sTitle,
                                            'thumbnailURL' : sThumbnail,
-                                           'tags' : sTags, 
+                                           'tags' : sTags,
                                            'description' : sDescription,
                                            'snippet': sSnippet,
                                            'extent':sExtent,
@@ -351,7 +394,7 @@ class Admin:
         requestToAdd = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username +  '?f=json&token=' + self.user.token;
         response = urllib.urlopen(requestToAdd).read()
 
-        jresult = json.loads(response)        
+        jresult = json.loads(response)
         return jresult["folders"]
 
     def clearGroup(self, groupid):
@@ -372,7 +415,7 @@ class Admin:
 
             response = urllib.urlopen(requestToDelete,parameters).read()
 
-            jresult = json.loads(response)     
+            jresult = json.loads(response)
 
         print "Complete."
         return None
@@ -389,7 +432,7 @@ class Admin:
 
         if len(sItems)>0: sItems=sItems[:-1]
 
-        requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + "/deleteItems" 
+        requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + "/deleteItems"
 
         parameters = urllib.urlencode({'items':sItems,
                                        'token' : self.user.token,
@@ -398,7 +441,7 @@ class Admin:
         print "Deleting " + str(len(foldercatalog)) + " items..."
         response = urllib.urlopen(requestToDelete,parameters).read()
 
-        jresult = json.loads(response)     
+        jresult = json.loads(response)
         print "Complete."
         return None
 
@@ -420,7 +463,7 @@ class Admin:
 
     def AGOLCatalog(self, query=None, includeSize=False, sCatalogURL=None):
         '''
-        Return all items from all users in a portal, optionally matching a 
+        Return all items from all users in a portal, optionally matching a
         specified query.
         optionally make the additional requests for SIZE.
         sCatalogURL can be specified to use a specific folder
@@ -438,7 +481,7 @@ class Admin:
         self.catalogURL=sCatalogURL #for cataloging folders
 
         if self.user.portalUrl != None:
-            self.searchURL = self.user.portalUrl  + "/sharing/rest" 
+            self.searchURL = self.user.portalUrl  + "/sharing/rest"
             self.viewURL = self.user.portalUrl  + "/home/item.html?id="
 
         self.query = query
@@ -553,7 +596,7 @@ class Admin:
             else:
                 char="&"
 
-            sCatalogQuery = self.catalogURL + char + "ts=1" 
+            sCatalogQuery = self.catalogURL + char + "ts=1"
 
         sCatalogQuery += "&f=json&num="+ str(num) + "&start=" + str(start)
         sCatalogQuery += "&token=" + self.user.token
@@ -573,14 +616,14 @@ class Admin:
 
             print "Updating Role for " + u.Username + " to " + u.Role + "..."
             response = urllib.urlopen(requestToUpdate,parameters).read()
-            jresult = json.loads(response)     
+            jresult = json.loads(response)
             success= str(jresult["success"])
             print "Success: " + success
 
         print "Complete."
         return None
 
-    
+
 #collection of AGOLItem
 class AGOLItems:
     def __init__ (self, item_list):
