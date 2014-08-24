@@ -32,6 +32,16 @@ class Admin:
         response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/portals/' + portalId + '/roles?' + parameters).read()
         roles = json.loads(response)
         return roles
+    def __groups__(self,start=0):
+        parameters = urllib.urlencode({'token' : self.user.token,
+                                       'q':'orgid:'+ self._getOrgID(),
+                                       'f' : 'json',
+                                       'start' : start,
+                                       'num' : 100})
+        portalId = self.user.__portalId__()
+        response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/community/groups?' + parameters).read()
+        groups = json.loads(response)
+        return groups
     def getRoles(self):
         '''
         Returns a list of roles defined in the organization.
@@ -47,6 +57,25 @@ class Admin:
             for role in roles['roles']:
                 allRoles.append(role)
         return allRoles
+    def getGroups(self):
+        '''
+        Returns a list of groups defined in the organization.
+        '''
+        allGroups = []
+        groups = self.__groups__()
+        for group in groups['results']:
+            allGroups.append(group)
+        while groups['nextStart'] > 0:
+            for group in groups['results']:
+                allGroups.append(group)
+        return allGroups
+    def getUsersInGroup(self,groupID):
+        parameters = urllib.urlencode({'token' : self.user.token,
+                                       'f' : 'json'})
+        portalId = self.user.__portalId__()
+        response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/community/groups/'+groupID+'/users?' + parameters).read()
+        groupUsers = json.loads(response)
+        return groupUsers
     def getUsers(self, roles=None, daysToCheck=10000):
         '''
         Returns a list of all users in the organization (requires admin access).
