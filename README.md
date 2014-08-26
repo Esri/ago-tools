@@ -71,7 +71,7 @@ Please use the following style guides when contributing to this particular repo:
 
 * 4 spaces for indentation
 * `'singleQuotes'` instead of `"doubleQuotes"`
-* `publicFunction()` vs ` `__internalFunction__()`
+* `publicFunction()` vs ` `\_\_internalFunction\_\_()`
 * `# Place comments on their own line preceding the code they explain.`
 
 
