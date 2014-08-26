@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import urllib
+import urllib,urllib2
 import json
 import csv
 import time
@@ -70,6 +70,9 @@ class Admin:
                 allGroups.append(group)
         return allGroups
     def getUsersInGroup(self,groupID):
+        '''
+        Returns a list of users in a group
+        '''
         parameters = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
         portalId = self.user.__portalId__()
@@ -116,6 +119,54 @@ class Admin:
                 if date.fromtimestamp(float(user['created'])/1000) > date.today()-timedelta(days=daysToCheck):
                     allUsers.append(user)
         return allUsers
+    def createGroup(self,title,snippet=None,description=None,tags=None,access="org",isViewOnly=False,viewOnly=False,inviteOnly=True,thumbnail=None):
+        '''
+        Creates a new group
+        '''
+        portalId = self.user.__portalId__()
+        uri = self.user.portalUrl + '/sharing/rest/community/createGroup'
+        parameters ={'token' : self.user.token,
+        'f' : 'json',
+                       'title' : title,
+                       'description':description,
+                       'snippet':snippet,
+                       'tags':tags,
+                       'access':access,
+                       'isInvitationOnly':inviteOnly,
+                       'isViewOnly':viewOnly,
+                       'thumbnail':thumbnail}
+
+        parameters = urllib.urlencode(parameters)
+        req = urllib2.Request(uri,parameters)
+        response = urllib2.urlopen(req)
+        result = response.read()
+        return json.loads(result)
+    def createUser(self,username,password,firstName,lastName,email,description,role,provider):
+        '''
+        Creates a new user WITHOUT sending an invitation
+        '''
+        invitations = [{"username":username,
+        "password":password,
+        "firstname":firstName,
+        "lastname":lastName,
+        "fullname":firstName + " " + lastName,
+        "email":email,
+        "role":role}]
+        parameters ={'token' : self.user.token,
+                                       'f' : 'json',
+                                       'subject':'Welcome to the portal',
+                                       'html':"blah",
+                                       'invitationList':{'invitations':invitations}}
+
+        parameters = urllib.urlencode(parameters)
+        portalId = self.user.__portalId__()
+
+        uri = self.user.portalUrl + '/sharing/rest/portals/' + portalId + '/invite'
+        req = urllib2.Request(uri,parameters)
+        response = urllib2.urlopen(req)
+
+        result = response.read()
+        return json.loads(result)
 
     def addUsersToGroups(self, users, groups):
         '''
@@ -191,7 +242,20 @@ class Admin:
         print '        from USER ' + userFrom + ' to USER ' + userTo
 
         return
+    def reassignGroupOwnership(self,groupId,userTo):
+        parameters ={'token' : self.user.token,
+                       'f' : 'json',
+                       'targetUsername':userTo}
 
+        parameters = urllib.urlencode(parameters)
+        portalId = self.user.__portalId__()
+
+        uri = self.user.portalUrl + '/sharing/rest/community/groups/'+groupId+'/reassign'
+        req = urllib2.Request(uri,parameters)
+        response = urllib2.urlopen(req)
+
+        result = response.read()
+        return json.loads(result)
     def reassignAllGroupOwnership(self, userFrom, userTo):
         '''
         REQUIRES ADMIN ACCESS
