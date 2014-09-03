@@ -145,13 +145,13 @@ class Admin:
         '''
         Creates a new user WITHOUT sending an invitation
         '''
-        invitations = [{"username":username,
-        "password":password,
-        "firstname":firstName,
-        "lastname":lastName,
-        "fullname":firstName + " " + lastName,
-        "email":email,
-        "role":role}]
+        invitations = [{"username":str(username),
+        "password":str(password),
+        "firstname":str(firstName),
+        "lastname":str(lastName),
+        "fullname":str(firstName) + " " + str(lastName),
+        "email":str(email),
+        "role":str(role)}]
         parameters ={'token' : self.user.token,
                                        'f' : 'json',
                                        'subject':'Welcome to the portal',
