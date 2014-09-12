@@ -69,6 +69,20 @@ class Admin:
             for group in groups['results']:
                 allGroups.append(group)
         return allGroups
+    def findGroup(self,title):
+        '''
+        Gets a group object by its title.
+        '''
+        parameters = urllib.urlencode({'token' : self.user.token,
+                                        'q':'title:'+title,
+                                       'f' : 'json'})
+        portalId = self.user.__portalId__()
+        response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/community/groups?' + parameters).read()
+        groupUsers = json.loads(response)
+        if "results" in groupUsers and len(groupUsers["results"]) > 0:
+            return groupUsers["results"][0]
+        else:
+            return None
     def getUsersInGroup(self,groupID):
         '''
         Returns a list of users in a group
@@ -489,7 +503,20 @@ class Admin:
 
         jresult = json.loads(response)
         return jresult["folders"]
+    def deleteGroup(self,groupid):
+        '''
+        Deletes group
+        '''
+        portalId = self.user.__portalId__()
+        uri = self.user.portalUrl + '/sharing/rest/community/groups/'+groupid+'/delete'
+        parameters ={'token' : self.user.token,
+        'f' : 'json'}
 
+        parameters = urllib.urlencode(parameters)
+        req = urllib2.Request(uri,parameters)
+        response = urllib2.urlopen(req)
+        result = response.read()
+        return json.loads(result)
     def clearGroup(self, groupid):
         '''
         Unshare all content from the specified group.
