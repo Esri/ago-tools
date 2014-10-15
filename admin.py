@@ -316,13 +316,63 @@ class Admin:
                 bSuccess=False
 
             if(bSuccess):
-                print str(i) + ") " + v.title + " (" + jresult["itemId"] + ") was shared."
+                print str(i)  + v.title + " (" + jresult["itemId"] + ") was shared."
             else:
-                print str(i) + ") " + v.title + " (" + jresult["itemId"] + ") could not be shared, or was already shared with this group." 
+                print str(i)  + v.title + " (" + jresult["itemId"] + ") could not be shared, or was already shared with this group." 
    
         return
         
+    def deleteItems (self, items):
 
+        sWebMapIDs=''
+        i=0
+        for v in items:
+            i = i +1
+            sWebMapIDs = sWebMapIDs + v.id
+            if (i < len(items)): 
+                sWebMapIDs = sWebMapIDs + ","
+
+            #requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + v.owner + '/items/' +  v.id + '/delete'
+
+            #have to get ownerFolder
+            parameters = urllib.urlencode({'token' : self.user.token, 'f': 'json'})
+            requestForInfo = self.user.portalUrl + '/sharing/rest/content/items/' + v.id
+ 
+            response = urllib.urlopen(requestForInfo, parameters ).read()
+
+            jResult = json.loads(response)
+
+            if('error' in jResult):
+                print str(i)  + ') ' + v.title + " (" + v.id + ") was not found and will be skipped." 
+            else:
+
+                folderID=str(jResult['ownerFolder'])
+
+                requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + v.owner + '/' + folderID + '/items/' + v.id + '/delete'
+            
+
+
+                #parameters = urllib.urlencode({'token' : self.user.token, 'f': 'json'})
+                parameters = urllib.urlencode({'token' : self.user.token, 'f': 'json','items':v.id})
+ 
+ 
+                response = urllib.urlopen(requestToDelete, parameters ).read()
+
+                jResult = json.loads(response)
+
+                bSuccess=False
+                try:
+                    if('success' in jResult):
+                        bSuccess=True
+                except:
+                    bSuccess=False
+
+                if(bSuccess):
+                    print str(i)  + ') ' + v.title + " (" + v.id + ") was deleted."
+                else:
+                    print str(i)  + ') ' + v.title + " (" + v.id + ") could not be deleted, or was already unaccessible." 
+    
+       
     def registerItems (self, mapservices, folder=''):
         '''
         Given a set of AGOL items, register them to the portal,
