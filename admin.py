@@ -263,6 +263,66 @@ class Admin:
 
         return None
 
+    def shareItems (self, items,groupid):
+        '''
+        http://www.arcgis.com/sharing/rest/content/users/jsmith/shareItems
+        everyone: false
+        items=93b54c8930ae46d9a00a7820cb3ebbd1,bb8e3d443ab44878ab8315b00b0612ca
+        groups=4774c1c2b79046f285b2e86e5a20319e,cc5f73ab367544d6b954d82cc9c6dab7
+
+        http://www.arcgis.com/sharing/rest/content/items/af01df44bf36437fa8daed01407138ab/share
+
+        '''
+
+        #requestToShare= self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '/shareItems'
+        #requestToShare= self.user.portalUrl + '/sharing/rest/content/items/shareItems'
+
+        '''
+        parameters = urllib.urlencode({'token' : self.user.token,
+                                       'items' : sWebMapIDs,
+                                       'everyone' : False,
+                                       'groups' : groupid,
+                                        'f' : 'json'})
+
+        response = urllib.urlopen(requestToShare, parameters ).read()
+
+        jresult = json.loads(response)
+        '''
+
+        sWebMapIDs=''
+        i=0
+        for v in items:
+            i = i +1
+            sWebMapIDs = sWebMapIDs + v.id
+            if (i < len(items)): 
+                sWebMapIDs = sWebMapIDs + ","
+         
+            requestToShare= self.user.portalUrl + '/sharing/rest/content/items/' + v.id + '/share' 
+            parameters = urllib.urlencode({'token' : self.user.token,
+                                           'everyone':False,
+                                           'account':False,
+                                           'groups' : groupid,
+                                            'f' : 'json'})
+
+            response = urllib.urlopen(requestToShare, parameters ).read()
+
+            jresult = json.loads(response)
+
+            l = len(jresult['notSharedWith'])
+            bSuccess=True
+            if(l==0):
+                bSuccess=True
+            else:
+                bSuccess=False
+
+            if(bSuccess):
+                print str(i) + ") " + v.title + " (" + jresult["itemId"] + ") was shared."
+            else:
+                print str(i) + ") " + v.title + " (" + jresult["itemId"] + ") could not be shared, or was already shared with this group." 
+   
+        return
+        
+
     def registerItems (self, mapservices, folder=''):
         '''
         Given a set of AGOL items, register them to the portal,
@@ -409,6 +469,85 @@ class Admin:
         sCatalogURL=self.user.portalUrl + "/sharing/rest/search?q=%20group%3A" + groupid + "%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20%20-type:%22Code%20Attachment%22%20-type:%22Featured%20Items%22%20-type:%22Symbol%20Set%22%20-type:%22Color%20Set%22%20-type:%22Windows%20Viewer%20Add%20In%22%20-type:%22Windows%20Viewer%20Configuration%22%20&num=100&sortField=title&sortOrder=asc"
 
         return self.AGOLCatalog(None,None,sCatalogURL)
+
+    def findWebmapService(self, webmapId, oldUrl, folderID=None):
+        try:
+            params = urllib.urlencode({'token' : self.user.token,
+                                       'f' : 'json'})
+            #print 'Getting Info for: ' + webmapId
+            #Get the item data
+            reqUrl = self.user.portalUrl + '/sharing/content/items/' + webmapId + '/data?' + params
+            itemDataReq = urllib.urlopen(reqUrl).read()
+            itemString = str(itemDataReq)
+
+            #See if it needs to be updated
+            if itemString.find(oldUrl) > -1:
+                return True
+            else:
+                #print 'Didn\'t find any services for ' + oldUrl
+                return False
+
+        except ValueError as e:
+            print 'Error - no web maps specified'
+        except AGOPostError as e:
+            print 'Error updating web map ' + e.webmap + ": " + e.msg
+
+    def findItemUrl(self, item, oldUrl, folderID=None):
+        '''
+        Use this to find the URL for items such as Map Services.
+        This can also find part of a URL. The text of oldUrl is replaced with the text of newUrl. For example you could change just the host name of your URLs.
+        '''
+        try:
+
+            if item.url == None:
+                #print item.title + ' doesn\'t have a url property'
+                return False
+
+            # Double check that the existing URL matches the provided URL
+            if item.url.find(oldUrl) > -1:
+                return True
+            else:
+                #print 'Didn\'t find the specified old URL: ' + oldUrl
+                return False
+        except ValueError as e:
+            print e
+            return False
+
+
+    def findItemsWithURLs(self, oldUrl):
+        
+        catalog= self.AGOLCatalog(None)
+        allResults = []
+
+        '''
+        Find the URL or URL part for all URLs in a list of AGOL items.
+        This works for all item types that store a URL. (e.g. web maps, map services, applications, etc.)
+        oldUrl -- All or part of a URL to search for.
+        newUrl -- The text that will be used to replace the current "oldUrl" text.
+        '''
+        countWebMaps=0
+        countServicesOrApps=0
+        i=0
+        iLength=len(catalog)
+        for item in catalog:
+            i=i+1
+            print str(i) + '/' + str(iLength)
+            if item.type == 'Web Map':
+                v=self.findWebmapService(item.id, oldUrl)
+                if v==True:
+                    dosomething=True
+                    countWebMaps=countWebMaps+1
+                    allResults.append(item)
+            else:
+                if not item.url == None:
+                    v=self.findItemUrl(item, oldUrl)
+                    if v==True:
+                        dosomething=True
+                        countServicesOrApps=countServicesOrApps+1
+                        allResults.append(item)
+
+        count=countServicesOrApps + countWebMaps
+        return allResults
 
 
     def AGOLUserCatalog(self, folder, includeSize=False):
