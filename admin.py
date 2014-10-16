@@ -316,9 +316,9 @@ class Admin:
                 bSuccess=False
 
             if(bSuccess):
-                print str(i)  + v.title + " (" + jresult["itemId"] + ") was shared."
+                print str(i)  + ') ' + v.title + " (" + jresult["itemId"] + ") was shared."
             else:
-                print str(i)  + v.title + " (" + jresult["itemId"] + ") could not be shared, or was already shared with this group." 
+                print str(i)  + ') ' + v.title + " (" + jresult["itemId"] + ") could not be shared, or was already shared with this group." 
    
         return
         

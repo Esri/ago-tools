@@ -71,15 +71,15 @@ if args.user == None:
 if args.portal == None:
     args.portal = _raw_input("Portal: ")
 
+args.portal = str(args.portal).replace("http://","https://")
+
+agoAdmin = Admin(args.user,args.portal,args.password)
+
 if args.url == None:
     args.url= _raw_input("Query URL: ")
 
 if args.file == None:
     args.file = _raw_input("Output CSV: ")
-
-args.portal = str(args.portal).replace("http://","https://")
-
-agoAdmin = Admin(args.user,args.portal,args.password)
 
 catalog = agoAdmin.findItemsWithURLs(args.url)
 
