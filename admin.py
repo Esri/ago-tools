@@ -4,8 +4,10 @@ import urllib
 import json
 import csv
 import time
+import arcpy
 
 from datetime import date, timedelta
+from collections import namedtuple
 
 class Admin:
     '''A class of tools for administering AGO Orgs or Portals'''
@@ -563,7 +565,171 @@ class Admin:
             print e
             return False
 
+    def __decode_dict__(self, dct):
+        newdict = {}
+        for k, v in dct.iteritems():
+            k = self.__safeValue__(k)
+            v = self.__safeValue__(v)
+            newdict[k] = v
+        return newdict
 
+    def __safeValue__(self, inVal):
+        outVal = inVal
+        if isinstance(inVal, unicode):
+            outVal = inVal.encode('utf-8')
+        elif isinstance(inVal, list):
+            outVal = self.__decode_list__(inVal)
+        return outVal
+
+    def __decode_list__(self, lst):
+        newList = []
+        for i in lst:
+            i = self.__safeValue__(i)
+            newList.append(i)
+        return newList
+
+    def json_to_obj(self,s):
+        def h2o(x):
+            if isinstance(x, dict):
+                return type('jo', (), {k: h2o(v) for k, v in x.iteritems()})
+            else:
+                return x
+        return h2o(json.loads(s))
+
+
+
+    def addBookmarksToWebMap(self,pBookmarks,webmapId):
+        '''
+        update the designated webmap with the list of bookmark objects
+        '''
+
+        #read webmap json
+        try:
+            params = urllib.urlencode({'token' : self.user.token,
+                                       'f' : 'json'})
+
+            print 'Getting Info for: ' + webmapId
+            #Get the item data
+            reqUrl = self.user.portalUrl + '/sharing/content/items/' + webmapId + '/data?' + params
+            itemDataReq = urllib.urlopen(reqUrl).read()
+            itemData = json.loads(itemDataReq, object_hook=self.__decode_dict__)
+                        
+            #add bookmarks into object list
+            itemData['bookmarks']=pBookmarks
+
+            #convert the updated json object back to string
+            sItemDataText=json.dumps(itemData, separators=(',',':'))
+
+            #get original item definition for update
+            itemInfoReq = urllib.urlopen(self.user.portalUrl + '/sharing/content/items/' + webmapId + '?' + params)
+            itemInfo = json.loads(itemInfoReq.read(), object_hook=self.__decode_dict__)
+            
+            #write original back as test
+            outParamObj = {
+                'extent' : ', '.join([str(itemInfo['extent'][0][0]), str(itemInfo['extent'][0][1]), str(itemInfo['extent'][1][0]), str(itemInfo['extent'][1][1])]),
+                'type' : itemInfo['type'],
+                'item' : itemInfo['item'],
+                'title' : itemInfo['title'],
+                'overwrite' : 'true',
+                'tags' : ','.join(itemInfo['tags']),
+                'text' : sItemDataText
+            }
+            # Get the item folder.
+            if itemInfo['ownerFolder']:
+                folderID = itemInfo['ownerFolder']
+            else:
+                folderID = ''
+
+            nBookmarksCount=str(len(pBookmarks))
+            print "Updating Webmap with " + nBookmarksCount + " bookmarks..."
+
+            #Post back the changes overwriting the old map
+            modRequest = urllib.urlopen(self.user.portalUrl + '/sharing/content/users/' + self.user.username + '/' + folderID + '/addItem?' + params , urllib.urlencode(outParamObj))
+            
+            #Evaluate the results to make sure it happened
+            modResponse = json.loads(modRequest.read())
+            if modResponse["success"]!=True:
+                print "The update was NOT successful."
+            else:
+                print "The update WAS successful."
+
+            return None
+
+
+        except ValueError as e:
+            print 'Error:'+ e.message
+
+
+        return None
+
+    def readBookmarksFromFeatureClass(self,path):
+        bmarks=[]
+        fieldnames = ["NAME","SHAPE@"]
+        wkid = "4326" 
+        myCursor = arcpy.da.SearchCursor(path,fieldnames,"",wkid)
+        for row in myCursor:
+            bm = bookmark()
+            extent = row[1].extent
+            bm.extent.xmin = extent.lowerLeft.X
+            bm.extent.ymin = extent.lowerLeft.Y
+            bm.extent.xmax = extent.upperRight.X
+            bm.extent.ymax = extent.upperRight.Y
+            bm.extent.SpatialReference.wkid = wkid
+            bm.name=row[0].title()
+
+            bmarks.append(bm.to_JSON2())
+
+        return bmarks
+
+    def createBookmarksFromLayer(self, url):
+
+        bmarks=[]
+        try:
+            
+            where = '1=1'
+            fields ='*'
+
+            token = ''
+            #SBTEST when to use token?
+            if(url.find("arcgis.com")>0):
+                token = self.user.token
+ 
+            #The above variables construct the query
+            query = "/query?where={}&outFields={}&returnGeometry=true&f=json&token={}".format(where, fields, token)
+        
+            fsURL = url + query
+ 
+            fs = arcpy.FeatureSet()
+            fs.load(fsURL)
+            fieldnames = ["NAME10","SHAPE@"]
+
+            wkid = "4326"   #use geographic for bookmarks, easier to confirm
+            myCursor = arcpy.da.SearchCursor(fs,fieldnames,"",wkid)
+
+            for row in myCursor:
+                bm = bookmark()
+                extent = row[1].extent
+                bm.extent.xmin = extent.lowerLeft.X
+                bm.extent.ymin = extent.lowerLeft.Y
+                bm.extent.xmax = extent.upperRight.X
+                bm.extent.ymax = extent.upperRight.Y
+                bm.extent.SpatialReference.wkid = wkid
+                bm.name=row[0].title()
+
+                bmarks.append(bm.to_JSON2())
+
+
+        except ValueError as e:
+            print 'Error: ' +e.message
+
+        return bmarks
+
+
+    def readBookmarksFromFile(self,inputfile):
+        with open(inputfile) as input:
+            data = json.load(input)
+            return data["bookmarks"]
+            
     def findItemsWithURLs(self, oldUrl):
         
         catalog= self.AGOLCatalog(None)
@@ -809,3 +975,38 @@ class UserAttributes:
             setattr(self, k, v)
 
 
+
+class bookmark(object):
+
+    def __init__(self):
+        self.name = None
+        self.extent = self.bb()
+
+    def to_JSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=2,separators=(',',':'))
+
+    def to_JSON2(self):
+                #     extent = row[1].extent
+                #bm.extent.xmin = extent.lowerLeft.X
+                #bm.extent.ymin = extent.lowerLeft.Y
+                #bm.extent.xmax = extent.upperRight.X
+                #bm.extent.ymax = extent.upperRight.Y
+                #bm.extent.SpatialReference.wkid = wkid
+                #bm.name=row[0].title()
+        #s='{"extent":{"SpatialReference":{"wkid":"4326"},"xmax":-77.58890542503474,"xmin":-77.66083839947551,"ymax":42.58041413631198,"ymin":42.549020481314585},"name":"Wayland 200"}'#.format(self.extent.xmin,self.extent.xmax,self.extent.ymin,self.extent.ymax,self.name)
+        s='{"extent":{"SpatialReference":{"wkid":"4326"},"xmax":' + str(self.extent.xmax) +',"xmin":' + str(self.extent.xmin) + ',"ymax":' + str(self.extent.ymax) +',"ymin":' + str(self.extent.ymin) + '},"name":"' + self.name + '"}'
+        #.format(self.extent.xmin,self.extent.xmax,self.extent.ymin,self.extent.ymax,self.name)
+        
+        return json.loads(s)
+
+    class bb(object):
+        def __init__(self):
+            self.SpatialReference = self.sr()
+            self.xmax = 0.0
+            self.ymax = 0.0
+            self.xmin = 0.0
+            self.ymin = 0.0
+
+        class sr(object):
+            def __init__(self):
+                self.wkid = ""
