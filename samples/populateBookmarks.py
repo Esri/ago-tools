@@ -30,9 +30,9 @@
 #}
 #}
 #### examples:
-#### populateBookmarks.py -u <username> -p <password> -jsonfile c:/temp/matownsbookmarks.json -itemid ff2251d13c094cbc857ae0787900355b -portal http://yourorg.maps.arcgis.com
-#### populateBookmarks.py -u <username> -p <password>  -layerURL http://services.arcgis.com/XWaQZrOGjgrsZ6Cu/arcgis/rest/services/Towns/FeatureServer/0 -itemid ff2251d13c094cbc857ae0787900355b -portal http://<org>.maps.arcgis.com
-#### populateBookmarks.py -u <username> -p <password>  -fc D:/data/SteubenCounty/Data.gdb/Districts -itemid ff2251d13c094cbc857ae0787900355b -portal http://<org>.maps.arcgis.com
+#### populateBookmarks.py -u <username> -p <password> -jsonfile c:/temp/matownsbookmarks.json -labelfield NAME -itemid ff2251d13c094cbc857ae0787900355b -portal http://yourorg.maps.arcgis.com
+#### populateBookmarks.py -u <username> -p <password>  -layerURL http://services.arcgis.com/XWaQZrOGjgrsZ6Cu/arcgis/rest/services/Towns/FeatureServer/0 -labelfield NAME -itemid ff2251d13c094cbc857ae0787900355b -portal http://<org>.maps.arcgis.com
+#### populateBookmarks.py -u <username> -p <password>  -fc D:/data/SteubenCounty/Data.gdb/Districts -labelfield NAME -itemid ff2251d13c094cbc857ae0787900355b -portal http://<org>.maps.arcgis.com
 
 import csv
 import argparse
@@ -91,7 +91,9 @@ parser.add_argument('-u', '--user')
 parser.add_argument('-p', '--password')
 parser.add_argument('-itemid', '--itemid')
 parser.add_argument('-layerID', '--layerID')
+parser.add_argument('-fcID', '--fcID')
 parser.add_argument('-layerURL', '--layerURL')
+parser.add_argument('-labelfield', '--labelfield')
 parser.add_argument('-jsonfile', '--jsonfile')
 parser.add_argument('-portal', '--portal')
 parser.add_argument('-fc','--fc')
@@ -111,24 +113,23 @@ agoAdmin = Admin(args.user,args.portal,args.password)
 if args.itemid == None:
     args.itemid = _raw_input("WebMap Id: ")
 
-##if args.layerID == None:
-##    args.layerID = _raw_input("Layer Id: ")
+if args.labelfield == None:
+    args.labelfield="NAME"
 
-##sBookmarks= agoAdmin.generateBookmarksFromItem(args.layerID)
+if args.layerID!=None:
+    args.layerURL=agoAdmin.getLayerURL(args.layerID)
 
 if args.layerURL!= None:
-    pBookmarks =agoAdmin.createBookmarksFromLayer(args.layerURL)
-elif args.layerID!=None:
-    #read layer URL from item ID
-    sLayerURL = agoAdmin.getLayerURL()
-    pBookmarks = agoAdmin.createBookmarksFromLayer(sLayerURL)
+    pBookmarks =agoAdmin.createBookmarksFromLayer(args.layerURL,args.labelfield)
 elif args.fc !=None:
-    pBookmarks = agoAdmin.readBookmarksFromFeatureClass(args.fc)
+    pBookmarks = agoAdmin.readBookmarksFromFeatureClass(args.fc,args.labelfield)
 elif args.jsonfile != None:
-    pBookmarks= agoAdmin.readBookmarksFromFile(args.jsonfile)
+    pBookmarks= agoAdmin.readBookmarksFromFile(args.jsonfile,args.labelfield)
+elif args.fcID !=None:
+    pBookmarks = agoAdmin.readBookmarksFromFeatureCollection(args.fcID,args.labelfield)
 else:
     args.jsonfile = _raw_input("json file: ")
-    pBookmarks= agoAdmin.readBookmarksFromFile(args.jsonfile)
+    pBookmarks= agoAdmin.readBookmarksFromFile(args.jsonfile,args.labelfield)
 
 #sBookmarks=json.JSONEncoder().encode(pBookmarks);
 if pBookmarks!=None:

@@ -662,9 +662,9 @@ class Admin:
 
         return None
 
-    def readBookmarksFromFeatureClass(self,path):
+    def readBookmarksFromFeatureClass(self,path,labelfield):
         bmarks=[]
-        fieldnames = ["NAME","SHAPE@"]
+        fieldnames = [labelfield,"SHAPE@"]
         wkid = "4326" 
         myCursor = arcpy.da.SearchCursor(path,fieldnames,"",wkid)
         for row in myCursor:
@@ -681,7 +681,7 @@ class Admin:
 
         return bmarks
 
-    def createBookmarksFromLayer(self, url):
+    def createBookmarksFromLayer(self, url,labelfield):
 
         bmarks=[]
         try:
@@ -701,7 +701,7 @@ class Admin:
  
             fs = arcpy.FeatureSet()
             fs.load(fsURL)
-            fieldnames = ["NAME10","SHAPE@"]
+            fieldnames = [labelfield,"SHAPE@"]
 
             wkid = "4326"   #use geographic for bookmarks, easier to confirm
             myCursor = arcpy.da.SearchCursor(fs,fieldnames,"",wkid)
@@ -729,10 +729,77 @@ class Admin:
         with open(inputfile) as input:
             data = json.load(input)
             return data["bookmarks"]
+    
+    def getLayerURL(self, layerId):
+        sURL=None
+
+        params = urllib.urlencode({'token' : self.user.token,
+                            'f' : 'json'})
+        #print 'Getting Info for: ' + webmapId
+        #Get the item data
+        
+        reqUrl = self.user.portalUrl + '/sharing/rest/content/items/' + layerId  + "?" + params
+        itemDataReq = urllib.urlopen(reqUrl).read()
+        itemString = str(itemDataReq)
+
+        pp=json.loads(itemString)
+
+        sURL = pp["url"]
+        l=sURL[len(sURL)-1]
+        
+        if (l.isnumeric()== False):
+            sURL = sURL + "/0"
+
+        return sURL        
+    
+    def readBookmarksFromFeatureCollection(self,fcId,labelfield):
+        pBookmarks=[]
+
+        #    def readBookmarksFromFeatureClass(self,path,labelfield):
+        #bmarks=[]
+        #fieldnames = [labelfield,"SHAPE@"]
+        #wkid = "4326" 
+        #myCursor = arcpy.da.SearchCursor(path,fieldnames,"",wkid)
+        #for row in myCursor:
+        #    bm = bookmark()
+        #    extent = row[1].extent
+        #    bm.extent.xmin = extent.lowerLeft.X
+        #    bm.extent.ymin = extent.lowerLeft.Y
+        #    bm.extent.xmax = extent.upperRight.X
+        #    bm.extent.ymax = extent.upperRight.Y
+        #    bm.extent.SpatialReference.wkid = wkid
+        #    bm.name=row[0].title()
+
+        #    bmarks.append(bm.to_JSON2())
+
+
+        params = urllib.urlencode({'token' : self.user.token,
+                            'f' : 'json'})
+        #print 'Getting Info for: ' + webmapId
+        #Get the item data
+        reqUrl = self.user.portalUrl + '/sharing/content/items/' + fcId + '/data?' + params
+        itemDataReq = urllib.urlopen(reqUrl).read()
+        itemString = str(itemDataReq)
+
+        pp=json.loads(itemString)
+        
+        for f in pp["layers"][0]["featureSet"]["features"]:
             
+            x=f["geometry"]["x"];
+            y=f["geometry"]["y"];
+            bmark=bookmark()
+            bmark.extent.xmin=x-10000
+            bmark.extent.xmax=x+10000
+            bmark.extent.ymin=y-10000
+            bmark.extent.ymax=y+10000
+            bmark.name=f["attributes"][labelfield]
+
+            pBookmarks.append(bmark.to_JSON3("102100"))
+
+        return pBookmarks
     def findItemsWithURLs(self, oldUrl):
         
-        catalog= self.AGOLCatalog(None)
+        catalog= self.AGOLCatalog (None)
         allResults = []
 
         '''
@@ -995,6 +1062,22 @@ class bookmark(object):
                 #bm.name=row[0].title()
         #s='{"extent":{"SpatialReference":{"wkid":"4326"},"xmax":-77.58890542503474,"xmin":-77.66083839947551,"ymax":42.58041413631198,"ymin":42.549020481314585},"name":"Wayland 200"}'#.format(self.extent.xmin,self.extent.xmax,self.extent.ymin,self.extent.ymax,self.name)
         s='{"extent":{"SpatialReference":{"wkid":"4326"},"xmax":' + str(self.extent.xmax) +',"xmin":' + str(self.extent.xmin) + ',"ymax":' + str(self.extent.ymax) +',"ymin":' + str(self.extent.ymin) + '},"name":"' + self.name + '"}'
+        #.format(self.extent.xmin,self.extent.xmax,self.extent.ymin,self.extent.ymax,self.name)
+        
+        return json.loads(s)
+
+    def to_JSON3(self,wkid):
+                #     extent = row[1].extent
+                #bm.extent.xmin = extent.lowerLeft.X
+                #bm.extent.ymin = extent.lowerLeft.Y
+                #bm.extent.xmax = extent.upperRight.X
+                #bm.extent.ymax = extent.upperRight.Y
+                #bm.extent.SpatialReference.wkid = wkid
+                #bm.name=row[0].title()
+        #s='{"extent":{"SpatialReference":{"wkid":"4326"},"xmax":-77.58890542503474,"xmin":-77.66083839947551,"ymax":42.58041413631198,"ymin":42.549020481314585},"name":"Wayland 200"}'#.format(self.extent.xmin,self.extent.xmax,self.extent.ymin,self.extent.ymax,self.name)
+        #SBTEST s='{"extent":{"SpatialReference":{"wkid":'  + wkid  +  '},"xmax":' + str(self.extent.xmax) +',"xmin":' + str(self.extent.xmin) + ',"ymax":' + str(self.extent.ymax) +',"ymin":' + str(self.extent.ymin) + '},"name":"' + self.name + '"}'
+        s='{"extent":{"SpatialReference":{"wkid":'  + wkid  +  '},"xmin":' + str(self.extent.xmin) +',"ymin":' + str(self.extent.ymin) + ',"xmax":' + str(self.extent.xmax) +',"ymax":' + str(self.extent.ymax) + '},"name":"' + self.name + '"}'
+        
         #.format(self.extent.xmin,self.extent.xmax,self.extent.ymin,self.extent.ymax,self.name)
         
         return json.loads(s)
