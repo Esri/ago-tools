@@ -4,7 +4,7 @@ import urllib
 import json
 import csv
 import time
-import arcpy
+
 
 from datetime import date, timedelta
 from collections import namedtuple
@@ -663,6 +663,9 @@ class Admin:
         return None
 
     def readBookmarksFromFeatureClass(self,path,labelfield):
+        
+        import arcpy
+
         bmarks=[]
         fieldnames = [labelfield,"SHAPE@"]
         wkid = "4326" 
@@ -682,6 +685,8 @@ class Admin:
         return bmarks
 
     def createBookmarksFromLayer(self, url,labelfield):
+
+        import arcpy
 
         bmarks=[]
         try:

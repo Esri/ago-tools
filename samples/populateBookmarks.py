@@ -124,7 +124,7 @@ if args.layerURL!= None:
 elif args.fc !=None:
     pBookmarks = agoAdmin.readBookmarksFromFeatureClass(args.fc,args.labelfield)
 elif args.jsonfile != None:
-    pBookmarks= agoAdmin.readBookmarksFromFile(args.jsonfile,args.labelfield)
+    pBookmarks= agoAdmin.readBookmarksFromFile(args.jsonfile)
 elif args.fcID !=None:
     pBookmarks = agoAdmin.readBookmarksFromFeatureCollection(args.fcID,args.labelfield)
 else:
