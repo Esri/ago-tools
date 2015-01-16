@@ -714,10 +714,26 @@ class Admin:
             for row in myCursor:
                 bm = bookmark()
                 extent = row[1].extent
-                bm.extent.xmin = extent.lowerLeft.X
-                bm.extent.ymin = extent.lowerLeft.Y
-                bm.extent.xmax = extent.upperRight.X
-                bm.extent.ymax = extent.upperRight.Y
+
+                #handle points
+                if extent.lowerLeft.X == extent.upperRight.X:
+                    myX=extent.lowerLeft.X
+                    myY=extent.lowerLeft.Y 
+                    nTol=.05
+                    myLL = arcpy.Point(myX-nTol,myY-nTol)
+                    myUR = arcpy.Point(myX+nTol,myY+nTol)
+
+                    bm.extent.xmin = myLL.X
+                    bm.extent.ymin = myLL.Y
+                    bm.extent.xmax = myUR.X
+                    bm.extent.ymax = myUR.Y
+
+                else:
+                    bm.extent.xmin = extent.lowerLeft.X
+                    bm.extent.ymin = extent.lowerLeft.Y
+                    bm.extent.xmax = extent.upperRight.X
+                    bm.extent.ymax = extent.upperRight.Y
+
                 bm.extent.SpatialReference.wkid = wkid
                 bm.name=row[0].title()
 
