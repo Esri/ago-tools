@@ -265,6 +265,56 @@ class Admin:
 
         return None
 
+    #calculateAttachmentCount(args.layerURL,args.flagField)
+    def calculateAttachmentCount(self,layerURL, flagField):
+
+        #get objectIDs
+        #http://services.arcgis.com/XWaQZrOGjgrsZ6Cu/arcgis/rest/services/CambridgeAssetInspections/FeatureServer/0/query?where=0%3D0&returnIdsOnly=true&f=json
+        parameters = urllib.urlencode({'token' : self.user.token})
+        query = "/query?where={}&returnIdsOnly=true&f=json".format("0=0")
+        
+        requestString = layerURL + query
+        
+        try:
+            print ("retrieving OBJECTIDs...")
+            responseOID = urllib.urlopen(requestString,parameters ).read()
+
+            jresult = json.loads(responseOID)
+            oidList=jresult["objectIds"]
+            
+            #iterate through features
+            for oid in oidList:
+                aQuery=layerURL + "/"+str(oid) + "/attachments?f=json"
+
+                #determine attachment count
+                responseAttachments = urllib.urlopen(aQuery,parameters ).read()
+                print "reading attachments for feature " + str(oid)
+                
+                jAttachresult = json.loads(responseAttachments)
+                aCount = len(jAttachresult["attachmentInfos"])
+                
+                #write attachment count
+                sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"NUMATTACHMENTS":' + str(aCount) +"}}]"
+                updateFeaturesRequest=layerURL + "/updateFeatures"
+
+                parametersUpdate = urllib.urlencode({'f':'json','token' : self.user.token,'features':sPost})
+       
+                print "writing " + str(aCount) + " attachment count for feature " + str(oid)
+
+                responseUpdate = urllib.urlopen(updateFeaturesRequest,parametersUpdate ).read()
+                a=responseUpdate
+
+        except:
+            e=1
+
+        
+
+            
+
+            
+
+        return None
+
     def shareItems (self, items,groupid):
         '''
         http://www.arcgis.com/sharing/rest/content/users/jsmith/shareItems
