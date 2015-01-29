@@ -4,6 +4,7 @@ import argparse
 import sys
 import json
 import urllib
+import time
 from agoTools.admin import Admin
 
 def _raw_input(prompt=None, stream=None, input=None):
@@ -117,7 +118,10 @@ for layer in layers:
             with arcpy.da.SearchCursor(poiLayer.dataSource,descriptionField,poiLayer.definitionQuery) as cursor:
               for row in cursor:
                 sectionDescription = row[0]
-                sectionDescription = sectionDescription.replace(r'"',r'\"')
+                if sectionDescription != None:
+                    sectionDescription = sectionDescription.replace(r'"',r'\"')
+                else:
+                    sectionDescription = ''
 
           if subLayer2.name == aoiLayerName:
             aoiLayer=subLayer2
@@ -143,6 +147,8 @@ for layer in layers:
 
         sJSON+=','
         sJSON+='"contentActions": [],'
+        nDate=int(time.mktime(time.localtime()))#142014177837
+        sJSON+='"pubDate": ' + str(nDate) + '000,'
         sJSON+= r'"status": "PUBLISHED",'
         sJSON+='"media": {"type": "webmap","webmap": {"id": "' + webmapid + '","extent": ' + sExtentJSON + ',"layers": null,"popup": null,"overview": {"enable": true,"openByDefault": true},"legend": {"enable": false,"openByDefault": false}}'
         
@@ -181,6 +187,15 @@ request = agoAdmin.user.portalUrl + '/sharing/rest/content/items/' + args.itemid
 itemDataReq = urllib.urlopen(request).read()
 my_data = json.loads(itemDataReq, object_hook=agoAdmin.__decode_dict__)
 
+#get folder info, etc.
+#b34f2e4586c342b0b53275c98f6a95b9 
+
+requestForInfo = agoAdmin.user.portalUrl + '/sharing/rest/content/items/' + args.itemid
+responseInfo = urllib.urlopen(requestForInfo, parameters ).read()
+jResponse = json.loads(responseInfo)
+folderID=str(jResponse['ownerFolder'])
+#####
+
 #my_data = json.loads(sContent2)
 
 #print my_data
@@ -205,7 +220,11 @@ outParamObj = {
 }
 
 parameters = urllib.urlencode({'token': agoAdmin.user.token, 'f': 'json'})
-requestUpdate = agoAdmin.user.portalUrl + '/sharing/rest/content/users/' + args.user + '/items/' + args.itemid +'/update?' + parameters
+#requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + v.owner + '/' + folderID + '/items/' + v.id + '/delete'
+            
+#requestUpdate = agoAdmin.user.portalUrl + '/sharing/rest/content/users/' + args.user + '/items/' + args.itemid +'/update?' + parameters
+requestUpdate = agoAdmin.user.portalUrl + '/sharing/rest/content/users/' + args.user + '/' + folderID  + '/items/' + args.itemid +'/update?' + parameters
+
 sResult= json.loads(urllib.urlopen(requestUpdate,urllib.urlencode(outParamObj)).read())
 
 
