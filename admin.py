@@ -868,9 +868,13 @@ class Admin:
             pBookmarks.append(bmark.to_JSON3("102100"))
 
         return pBookmarks
-    def findItemsWithURLs(self, oldUrl):
+    def findItemsWithURLs(self, oldUrl,folder):
         
-        catalog= self.AGOLCatalog (None)
+        if(folder!=None):
+            catalog = self.AGOLUserCatalog(folder,False)
+        else:
+            catalog=self.AGOLCatalog(None)
+
         allResults = []
 
         '''

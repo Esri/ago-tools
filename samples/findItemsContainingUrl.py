@@ -1,8 +1,7 @@
 
-#### Update any missing thumbnails for items under My Content with a default
-#### Optionally specify a particular folder to search from
+#### Find Items Containing parts of URL, optionally using a folder ID
 #### Example:
-#### updateServiceItemsThumbnail.py -u myuser -p mypassword -portal https://esri.maps.arcgis.com 
+#### findItemsContainingUrl.py -u myuser -p mypassword -url http://myserver.com -portal https://esri.maps.arcgis.com -folder demo
 
 import csv
 import argparse
@@ -62,6 +61,7 @@ parser.add_argument('-p', '--password')
 parser.add_argument('-url', '--url')
 parser.add_argument('-file', '--file')
 parser.add_argument('-portal', '--portal')
+parser.add_argument('-folder', '--folder')
 
 args = parser.parse_args()
 
@@ -73,6 +73,9 @@ if args.portal == None:
 
 args.portal = str(args.portal).replace("http://","https://")
 
+if args.folder == None:
+    args.folder = _raw_input("Folder (optional): ")
+
 agoAdmin = Admin(args.user,args.portal,args.password)
 
 if args.url == None:
@@ -81,7 +84,13 @@ if args.url == None:
 if args.file == None:
     args.file = _raw_input("Output CSV: ")
 
-catalog = agoAdmin.findItemsWithURLs(args.url)
+folderid = None
+if args.folder!= None:
+    fid = agoAdmin.getFolderID(args.folder)
+    args.folder=fid
+    folderid = '/' + args.folder
+
+catalog = agoAdmin.findItemsWithURLs(args.url,folderid)
 
 with open(args.file, 'wb') as output:
     # Write header row.
