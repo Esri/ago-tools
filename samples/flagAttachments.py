@@ -1,7 +1,7 @@
 #### calculate a field for feature layer indicating presence of attachments
 
 #### example:
-#### flagAttachment.py -u <username> -p <password> -flagField NUMATTACHMENTS -layerURL http://services.arcgis.com/XWaQZrOGjgrsZ6Cu/arcgis/rest/services/Towns/FeatureServer/0  -portal http://yourorg.maps.arcgis.com
+#### flagAttachment.py -u <username> -p <password> -flagField HASATTACHMENTS -layerURL http://services.arcgis.com/XWaQZrOGjgrsZ6Cu/arcgis/rest/services/Towns/FeatureServer/0  -portal http://yourorg.maps.arcgis.com
 
 import csv
 import argparse

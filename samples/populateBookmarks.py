@@ -1,5 +1,7 @@
-#### Update a webmap with a collection of bookmarks
-#### Input json file format:
+#### Update a webmap with a collection of bookmarks derived from:
+#### Input json file format, feature extents from service (via URL or ArcGIS Online ID), feature extents from local feature layer
+
+#### Input json file format (from webmap spec):
 ####
 ####
 ####
@@ -33,6 +35,7 @@
 #### populateBookmarks.py -u <username> -p <password> -jsonfile c:/temp/matownsbookmarks.json -labelfield NAME -itemid ff2251d13c094cbc857ae0787900355b -portal http://yourorg.maps.arcgis.com
 #### populateBookmarks.py -u <username> -p <password>  -layerURL http://services.arcgis.com/XWaQZrOGjgrsZ6Cu/arcgis/rest/services/Towns/FeatureServer/0 -labelfield NAME -itemid ff2251d13c094cbc857ae0787900355b -portal http://<org>.maps.arcgis.com
 #### populateBookmarks.py -u <username> -p <password>  -fc D:/data/SteubenCounty/Data.gdb/Districts -labelfield NAME -itemid ff2251d13c094cbc857ae0787900355b -portal http://<org>.maps.arcgis.com
+#### populateBookmarks.py -u <username> -p <password>  -layerID -labelfield NAME -itemid ff2251d13c094cbc857ae0787900355b -portal http://<org>.maps.arcgis.com
 
 import csv
 import argparse
@@ -113,11 +116,11 @@ agoAdmin = Admin(args.user,args.portal,args.password)
 if args.itemid == None:
     args.itemid = _raw_input("WebMap Id: ")
 
-if args.labelfield == None:
-    args.labelfield="NAME"
-
 if args.layerID!=None:
     args.layerURL=agoAdmin.getLayerURL(args.layerID)
+
+if args.labelfield == None:
+    args.labelfield=_raw_input("label field: ")
 
 if args.layerURL!= None:
     pBookmarks =agoAdmin.createBookmarksFromLayer(args.layerURL,args.labelfield)
@@ -128,10 +131,10 @@ elif args.jsonfile != None:
 elif args.fcID !=None:
     pBookmarks = agoAdmin.readBookmarksFromFeatureCollection(args.fcID,args.labelfield)
 else:
-    args.jsonfile = _raw_input("json file: ")
-    pBookmarks= agoAdmin.readBookmarksFromFile(args.jsonfile,args.labelfield)
+    args.layerID = _raw_input("item ID of feature layer: ")
+    args.layerURL=agoAdmin.getLayerURL(args.layerID)
+    pBookmarks =agoAdmin.createBookmarksFromLayer(args.layerURL,args.labelfield)
 
-#sBookmarks=json.JSONEncoder().encode(pBookmarks);
 if pBookmarks!=None:
     agoAdmin.addBookmarksToWebMap(pBookmarks,args.itemid);
 else:

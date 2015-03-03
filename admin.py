@@ -296,15 +296,13 @@ class Admin:
                 if(aCount>0):
                     bHasAttachments=True
 
-                #write attachment count
-                #sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"NUMATTACHMENTS":' + str(aCount) +"}}]"
-                #sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"' + flagField + '":' + str(aCount) +"}}]"
+                #write attachment status
                 sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"' + flagField + '":"' + str(bHasAttachments) +'"}}]'
                 updateFeaturesRequest=layerURL + "/updateFeatures"
 
                 parametersUpdate = urllib.urlencode({'f':'json','token' : self.user.token,'features':sPost})
        
-                print "writing " + str(aCount) + " attachment count for feature " + str(oid)
+                print "writing " + str(aCount) + " attachments status for feature " + str(oid)
 
                 responseUpdate = urllib.urlopen(updateFeaturesRequest,parametersUpdate ).read()
                 a=responseUpdate
@@ -389,7 +387,8 @@ class Admin:
             if (i < len(items)): 
                 sWebMapIDs = sWebMapIDs + ","
 
-            #requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + v.owner + '/items/' +  v.id + '/delete'
+            if not hasattr(v, 'title'):                
+                v.title="Item "
 
             #have to get ownerFolder
             parameters = urllib.urlencode({'token' : self.user.token, 'f': 'json'})
@@ -403,15 +402,13 @@ class Admin:
                 print str(i)  + ') ' + v.title + " (" + v.id + ") was not found and will be skipped." 
             else:
 
-                folderID=str(jResult['ownerFolder'])
-
+                if jResult['ownerFolder']:
+                    folderID = str(jResult['ownerFolder'])
+                else:
+                    folderID = ''
+          
                 requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + v.owner + '/' + folderID + '/items/' + v.id + '/delete'
-            
-
-
-                #parameters = urllib.urlencode({'token' : self.user.token, 'f': 'json'})
                 parameters = urllib.urlencode({'token' : self.user.token, 'f': 'json','items':v.id})
- 
  
                 response = urllib.urlopen(requestToDelete, parameters ).read()
 
@@ -750,7 +747,7 @@ class Admin:
             fields ='*'
 
             token = ''
-            #SBTEST when to use token?
+            #todo when to use token?
             if(url.find("arcgis.com")>0):
                 token = self.user.token
  
@@ -873,6 +870,7 @@ class Admin:
             pBookmarks.append(bmark.to_JSON3("102100"))
 
         return pBookmarks
+
     def findItemsWithURLs(self, oldUrl,folder):
         
         if(folder!=None):

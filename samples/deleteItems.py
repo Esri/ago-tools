@@ -1,3 +1,8 @@
+#### Delete items listed in an input CSV from  the organization
+#### The only required fields in the CSV are:
+#### id,owner 
+#### Example:
+#### deleteItems.py -u myuser -p mypassword -folder MyNewItems -portal https://esri.maps.arcgis.com -file c:\temp\agolinput.csv
 
 import csv
 import argparse

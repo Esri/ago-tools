@@ -85,7 +85,7 @@ if args.file == None:
     args.file = _raw_input("Output CSV: ")
 
 folderid = None
-if args.folder!= None:
+if args.folder!= None and args.folder!='':
     fid = agoAdmin.getFolderID(args.folder)
     args.folder=fid
     folderid = '/' + args.folder
