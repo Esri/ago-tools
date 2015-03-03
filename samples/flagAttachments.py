@@ -49,7 +49,10 @@ args.portal = str(args.portal).replace("http://","https://")
 agoAdmin = Admin(args.user,args.portal,args.password)
 
 if args.flagField == None:
-    args.flagField="NUMATTACHMENTS"
+    args.flagField="HASATTACHMENTS"
+
+if (args.layerID==None and args.layerURL==None):
+    args.layerID = _raw_input("layerID: ")
 
 if args.layerID!=None:
     args.layerURL=agoAdmin.getLayerURL(args.layerID)

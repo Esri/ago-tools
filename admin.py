@@ -292,9 +292,14 @@ class Admin:
                 
                 jAttachresult = json.loads(responseAttachments)
                 aCount = len(jAttachresult["attachmentInfos"])
-                
+                bHasAttachments=False
+                if(aCount>0):
+                    bHasAttachments=True
+
                 #write attachment count
-                sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"NUMATTACHMENTS":' + str(aCount) +"}}]"
+                #sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"NUMATTACHMENTS":' + str(aCount) +"}}]"
+                #sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"' + flagField + '":' + str(aCount) +"}}]"
+                sPost = '[{"attributes":{"OBJECTID":' + str(oid) + ',"' + flagField + '":"' + str(bHasAttachments) +'"}}]'
                 updateFeaturesRequest=layerURL + "/updateFeatures"
 
                 parametersUpdate = urllib.urlencode({'f':'json','token' : self.user.token,'features':sPost})

@@ -194,6 +194,11 @@ requestForInfo = agoAdmin.user.portalUrl + '/sharing/rest/content/items/' + args
 responseInfo = urllib.urlopen(requestForInfo, parameters ).read()
 jResponse = json.loads(responseInfo)
 folderID=str(jResponse['ownerFolder'])
+if(folderID!='None'):
+    folderID="\\" + folderID
+else:
+    folderID=""
+
 #####
 
 #my_data = json.loads(sContent2)
@@ -223,7 +228,7 @@ parameters = urllib.urlencode({'token': agoAdmin.user.token, 'f': 'json'})
 #requestToDelete = self.user.portalUrl + '/sharing/rest/content/users/' + v.owner + '/' + folderID + '/items/' + v.id + '/delete'
             
 #requestUpdate = agoAdmin.user.portalUrl + '/sharing/rest/content/users/' + args.user + '/items/' + args.itemid +'/update?' + parameters
-requestUpdate = agoAdmin.user.portalUrl + '/sharing/rest/content/users/' + args.user + '/' + folderID  + '/items/' + args.itemid +'/update?' + parameters
+requestUpdate = agoAdmin.user.portalUrl + '/sharing/rest/content/users/' + args.user  + folderID  + '/items/' + args.itemid +'/update?' + parameters
 
 sResult= json.loads(urllib.urlopen(requestUpdate,urllib.urlencode(outParamObj)).read())
 

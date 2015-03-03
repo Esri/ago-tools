@@ -4,3 +4,6 @@ agoTools.sln
 agoTools.v11.suo
 agotools.pyproj
 agotools.pyproj.user
+*.suo
+site-packages - Shortcut.lnk
+UpgradeLog.htm
