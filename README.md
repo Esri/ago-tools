@@ -39,7 +39,7 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * [Update any missing thumbnails for items under My Content with a default](samples/updateServiceItemsThumbnail.py)
 * [Assign roles to Username and Role from input CSV](samples/updateUserRoles.py)
 * [Delete items listed in a CSV from an organization](samples/deleteItems.py)
-* [Find items containing reference of specific path](samples/findItemsContainingURL.py)
+* [Find items containing reference of specific path](samples/findItemsContainingUrl.py)
 * [Insert bookmarks into webmap from feature extents](samples/populateBookmarks.py)
 * [Calculate status of attachments for features in layer](samples/flagAttachments.py)
 
