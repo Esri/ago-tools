@@ -12,7 +12,7 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * Update sharing of content in groups
 * Remove items from an organization
 * Automate registration of items via spreadsheet
-* Calculate presence of attachments for feature layer
+* Calculate presence of attachments for features
 
 ## Instructions
 
