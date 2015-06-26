@@ -9,6 +9,10 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * Search for new users and add them to a list of groups
 * Move (migrate) all items between accounts (single or batch)
 * Search a portal
+* Update sharing of content in groups
+* Remove items from an organization
+* Automate registration of items via spreadsheet
+* Calculate presence of attachments for features
 
 ## Instructions
 
@@ -38,6 +42,11 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * [Remove (unshare) all items from a designated group in the organization](samples/clearGroup.py)
 * [Update any missing thumbnails for items under My Content with a default](samples/updateServiceItemsThumbnail.py)
 * [Assign roles to Username and Role from input CSV](samples/updateUserRoles.py)
+* [Delete items listed in a CSV from an organization](samples/deleteItems.py)
+* [Find items containing reference of specific path](samples/findItemsContainingUrl.py)
+* [Insert bookmarks into webmap from feature extents](samples/populateBookmarks.py)
+* [Calculate status of attachments for features in layer](samples/flagAttachments.py)
+
 
 ### Utilities Class
 
