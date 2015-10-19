@@ -14,19 +14,10 @@ A Python package to assist with administering ArcGIS Online Organizations.
 * Automate registration of items via spreadsheet
 * Calculate presence of attachments for features
 
-## Instructions
-
-1. Fork and then clone the repo. 
-2. Run and try the samples.
-
 ## Installation
 
-1. Unzip into a folder such as C:/myscripts
-2. Change the directory name from C:/myscripts/ago-tools-master to C:/myscripts/agoTools (name must not have dashes).
-3. Then do one of the following: A) add that directory to your system path -OR- B) append the directory at runtime using the sys module in python:
-      
-        import sys
-        sys.path.append('c:/myscripts')
+1. Download or clone the project.
+2. Run `python setup.py install` from the command line **--OR--** add the `agoTools` folder to your script directory.
 
 ## Samples
 ### Admin Class
