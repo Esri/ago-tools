@@ -1,10 +1,7 @@
+# Build files
 *.pyc
-*.DS_Store
-agoTools.sln
-agoTools.v11.suo
-agotools.pyproj
-agotools.pyproj.user
-*.suo
-site-packages - Shortcut.lnk
-UpgradeLog.htm
-samples/AutomateStoryMapAuthoring.bat
+build/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
