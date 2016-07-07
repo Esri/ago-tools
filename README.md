@@ -2,6 +2,13 @@
 
 A Python package to assist with administering ArcGIS Online Organizations.
 
+## Project Status
+>This project is no longer being actively developed. In the short term, the intent is to tidy up any outstanding bugs and small fixes. Longer term, I'd like to rewrite all of the examples from this project to work against the new [ArcGIS API for Python](https://developers.arcgis.com/python/) which will be more robust and ultimately much better maintained than this library. It is actively being developed and you can [join the conversation in the beta](https://earlyadopter.esri.com/callout/?callid={C9060EB8-F000-4611-88F8-4C2D34B28A36}) today. 
+
+>I will continue to accept new PRs in the meantime if anybody is feeling particularly ambitious or wants to help out with the cleanup.
+
+>    @ecaldwell July 7, 2016
+
 ## Features
 
 * Create a spreadsheet of all users in the org
