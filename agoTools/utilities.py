@@ -222,6 +222,16 @@ class Utilities:
         request = self.user.portalUrl + '/sharing/rest/content/users/' + userName + '?' + parameters
         userContent = json.loads(urllib.urlopen(request).read())
         return userContent['folders']
+    
+    def getUserGroups(self, username=None):
+        '''
+        Returns all groups for the specified user.'''
+        if username == None:
+            username = self.user.username
+        parameters = urllib.urlencode({'token': self.user.token, 'f': 'json'})
+        request = self.user.portalUrl + '/sharing/rest/community/users/' + username + '?' + parameters
+        response = json.loads(urllib.urlopen(request).read())
+        return response['groups']
 
     def getFolderID(self, folderTitle, userName=None):
         '''
