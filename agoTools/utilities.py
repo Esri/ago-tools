@@ -285,22 +285,12 @@ class Utilities:
         return newList
 
     def __getItemFolder__(self, itemId):
-        '''Finds the foldername for a particular item.'''
-        # This method is probably not needed anymore as the item folder
-        # is returned in the description response ('ownerFolder').
-        # Recommend deprecating this function or rewriting it to use the simple
-        # description request and return 'ownerFolder'.
+        '''Finds the folder id for a particular item.'''
         parameters = urllib.urlencode({'token' : self.user.token,
                                        'f' : 'json'})
-        response = json.loads(urllib.urlopen(self.user.portalUrl + '/sharing/rest/content/users/' + self.user.username + '?' + parameters).read())
-        for item in response['items']:
-            if item['id'] == itemId:
-                return ''
-        for folder in response['folders']:
-            folderContent = self.__getFolderContent__(folder['id'])
-            for item in folderContent['items']:
-                if item['id'] == itemId:
-                    return folder['id']
+        request = '{}/sharing/rest/content/items/{}?{}'.format(self.user.portalUrl, itemId, parameters)
+        response = json.loads(urllib.urlopen(request).read())
+        return response['ownerFolder']
 
     def __getFolderContent__(self, folderId):
         '''Lists all of the items in a folder.'''
