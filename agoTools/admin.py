@@ -68,6 +68,7 @@ class Admin:
         for group in groups['results']:
             allGroups.append(group)
         while groups['nextStart'] > 0:
+            groups = self.__groups__(groups['nextStart'])
             for group in groups['results']:
                 allGroups.append(group)
         return allGroups
