@@ -206,6 +206,28 @@ class Admin:
             toolSummary.append({group: json.loads(response)})
 
         return toolSummary
+    
+    def removeUsersFromGroups(self, users, groups):
+        '''
+        REQUIRES ADMIN ACCESS
+        Remove organization users from multiple groups and return a list of the status
+        '''
+        # Provide one or more usernames in a list.
+        # e.g. ['user_1', 'user_2']
+        # Provide one or more group IDs in a list.
+        # e.g. ['d93aabd856f8459a8905a5bd434d4d4a', 'f84c841a3dfc4591b1ff83281ea5025f']
+
+        toolSummary = []
+
+        # Assign users to the specified group(s).
+        parameters = urllib.urlencode({'token': self.user.token, 'f': 'json'})
+        for group in groups:
+            # Add Users - REQUIRES POST method (undocumented operation as of 2013-11-12).
+            response = urllib.urlopen(self.user.portalUrl + '/sharing/rest/community/groups/' + group + '/removeUsers?', 'users=' + ','.join(users) + "&" + parameters).read()
+            # Users not removed will be reported back with each group.
+            toolSummary.append({group: json.loads(response)})
+
+        return toolSummary
 
     def reassignAllUser1ItemsToUser2(self, userFrom, userTo):
         '''
